@@ -65,6 +65,7 @@ for name in params.keys():
 Read data
 """
 # read photometry
+gp_times_lc = {}
 times_lc, fluxes, fluxes_error = {},{},{}
 for inst in instruments_lc:
     times_lc[inst], fluxes[inst], fluxes_error[inst] = np.loadtxt(datafolder+inst.lower()+'.lc.dat',
@@ -75,6 +76,9 @@ for inst in instruments_lc:
         times_lc[inst] = np.delete(times_lc[inst], i_out)
         fluxes[inst] = np.delete(fluxes[inst], i_out)
         fluxes_error[inst] = np.delete(fluxes_error[inst], i_out)
+
+        # include GPs for TESS`
+        gp_times_lc[inst] = times_lc[inst]
 
     # plot photometry
     plt.scatter(times_lc[inst], fluxes[inst],s=1)
