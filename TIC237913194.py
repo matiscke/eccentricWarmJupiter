@@ -1,6 +1,5 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import pandas as pd
 import juliet
 import plots
 
@@ -77,12 +76,10 @@ for inst in instruments_lc:
         fluxes[inst] = np.delete(fluxes[inst], i_out)
         fluxes_error[inst] = np.delete(fluxes_error[inst], i_out)
 
-
-    # plt.scatter(times_lc[inst], fluxes[inst],s=1)
-    # plt.title(inst)
-    # plt.show()
-
-
+    # plot photometry
+    plt.scatter(times_lc[inst], fluxes[inst],s=1)
+    plt.title(inst)
+    plt.show()
 
 
 # read RVs
@@ -95,11 +92,12 @@ for inst in instruments_rv:
 dataset = juliet.load(
     priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
     t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
+    GP_regressors_lc = times_lc,
     out_folder=out_folder, verbose=True)
 
 # Fit and absorb results into a juliet.fit object:
-results = dataset.fit(use_dynesty=True, n_live_points = 500,
-                      dynesty_nthreads=2)
+results = dataset.fit(use_dynesty=True, n_live_points = 500)
+                      # dynesty_nthreads=30)
 
 # plot posteriors
 fig = plots.plot_cornerPlot(results, params)
