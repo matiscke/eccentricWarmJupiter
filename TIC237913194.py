@@ -4,7 +4,7 @@ import juliet
 import plots
 
 datafolder = '/Users/schlecker/WINE/TIC237913194/data/'
-out_folder = 'test10'
+out_folder = 'test12'
 instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 instruments_rv = ['FEROS']
 colors_rv = ['orangered','cornflowerblue', 'purple', 'forestgreen']
@@ -96,12 +96,12 @@ for inst in instruments_rv:
 dataset = juliet.load(
     priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
     t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
-    GP_regressors_lc = times_lc,
+    GP_regressors_lc =gp_times_lc,
     out_folder=out_folder, verbose=True)
 
 # Fit and absorb results into a juliet.fit object:
-results = dataset.fit(use_dynesty=True, n_live_points = 500)
-                      # dynesty_nthreads=30)
+results = dataset.fit(use_dynesty=True, n_live_points = 500, ecclim=0.7,
+                      dynesty_nthreads=7)
 
 # plot posteriors
 fig = plots.plot_cornerPlot(results, params)
