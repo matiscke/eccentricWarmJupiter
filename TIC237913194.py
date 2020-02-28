@@ -9,6 +9,14 @@ instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 instruments_rv = ['FEROS']
 colors_rv = ['orangered','cornflowerblue', 'purple', 'forestgreen']
 
+# target parameters
+Mstar = 1.03 # solar mass
+Mstar_err = .06
+Rstar = 1.088 # solar raddi
+Rstar_err = .012
+Teff = 5788
+
+solarrad2m = 6.957e8 # solar radii in meters
 
 """
 Define the priors
@@ -113,3 +121,11 @@ fig, ax = plots.plot_photometry(dataset, results)
 plt.show()
 fig.savefig(out_folder + '/photometryFitted.pdf')
 pass
+
+
+""" Compute additional quantities 
+"""
+# current best-fit params
+a = 16785120000.
+e = 0.575
+fig, ax = plots.plot_Teq_theta(a, e, Rstar*solarrad2m, Teff)

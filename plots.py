@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import corner
 import numpy as np
+import aux
 
 
 def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
@@ -59,4 +60,13 @@ def plot_photometry(dataset, results):
     # plt.ylim([0.999,1.001])
     ax.set_xlabel('Time (BJD - 2457000)')
     ax.set_ylabel('Relative flux')
+    return fig, ax
+
+def plot_Teq_theta(a, e, Rstar, Teff, albedo=0., emissivity=1., beta=1.):
+    """plot equilibrium temperature as a function of true anomaly theta."""
+    fig, ax = plt.subplots()
+    theta = np.linspace(0., 2*np.pi, 200)
+    ax.plot(theta, aux.Teq(aux.r_of_theta(theta, a, e), Rstar, Teff))
+    ax.set_xlabel('true anomaly')
+    ax.set_ylabel('equilibrium temperature')
     return fig, ax

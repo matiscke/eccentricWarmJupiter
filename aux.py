@@ -7,6 +7,11 @@ import numpy as np
 
 au2m = 1.496e11
 
+def r_of_theta(theta, a, e=0.):
+    """ compute orbital distance from true anomaly for an eccentric orbit."""
+    r = a*(1-e**2)/(1+e*np.cos(theta))
+    return r
+
 def Teq(r, Rstar, Teff, albedo=0., emissivity=1., beta=1.):
     """ compute the instantaneous equilibrium temperature of a planet at orbital
     distance r. See equation 3 in Kaltenegger+2011.
