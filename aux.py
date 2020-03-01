@@ -4,6 +4,11 @@ Martin Schlecker, 2020
 schlecker@mpia.de
 """
 import numpy as np
+try:
+    from astropy.timeseries import LombScargle
+except ModuleNotFoundError:
+    # the timeserie module moved at astropy 3.1 -> 3.2
+    from astropy.stats import LombScargle
 
 au2m = 1.496e11
 
@@ -23,3 +28,21 @@ def Teq(r, Rstar, Teff, albedo=0., emissivity=1., beta=1.):
     """
     teq = Teff*((1. - albedo)/(beta*emissivity))**(1./4.)*np.sqrt(0.5*Rstar/r)
     return teq
+
+
+
+def get_GLS(t, rv, rv_error):
+    """ compute the Generalized Lomb-Scargle periodogram.
+
+    Notes
+    -----
+    The irregularly-sampled data enables frequencies much higher than the
+    average Nyquist frequency.
+    """
+    ls = LombScargle(t, rv, rv_error, fit_mean=True)
+    frequency, power = ls.autopower() # minimum_frequency=f_min, maximum_frequency = f_max) ### automated f limits from baseline and Nyquist factor
+    i_peak = np.argmax(power)
+    peakFrequency = frequency[i_peak]
+    peakPower = power[i_peak]
+    FAP = ls.false_alarm_probability(peakPower, method='bootstrap')
+    return peakFrequency, peakPower, FAP, ls
