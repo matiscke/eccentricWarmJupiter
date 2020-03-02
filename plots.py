@@ -62,11 +62,11 @@ def plot_photometry(dataset, results):
     ax.set_ylabel('Relative flux')
     return fig, ax
 
-def plot_Teq_theta(a, e, Rstar, Teff, albedo=0., emissivity=1., beta=1.):
+def plot_Teq_theta(a, e, L, albedo=0., emissivity=1., beta=1.):
     """plot equilibrium temperature as a function of true anomaly theta."""
     fig, ax = plt.subplots()
     theta = np.linspace(0., 2*np.pi, 200)
-    ax.plot(theta, aux.Teq(aux.r_of_theta(theta, a, e), Rstar, Teff))
+    ax.plot(theta, aux.Teq(L, aux.r_of_theta(theta, a, e), albedo, emissivity, beta))
     ax.set_xlabel('true anomaly')
     ax.set_ylabel('equilibrium temperature')
     return fig, ax

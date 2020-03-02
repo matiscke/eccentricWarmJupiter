@@ -17,16 +17,36 @@ def r_of_theta(theta, a, e=0.):
     r = a*(1-e**2)/(1+e*np.cos(theta))
     return r
 
-def Teq(r, Rstar, Teff, albedo=0., emissivity=1., beta=1.):
+def Teq(L, a, albedo=0., emissivity=1., beta=1.):
     """ compute the instantaneous equilibrium temperature of a planet at orbital
-    distance r. See equation 3 in Kaltenegger+2011.
+    distance r.
+
+    See equation 3 in Kaltenegger+2011.
     
+    Parameters
+    ----------
+    L : float
+        stellar luminosity [L_sol]
+    a : float
+        semi-major axis [au]
+    albedo : float
+        planetary albedo
+    emissivity : float
+        broadband thermal emissivity (usually ~ 1)
    beta : float
        fraction of the planet surface that re-radiates the absorbed flux. 
        beta = 1 for fast rotators and beta ~ 0.5 for tidally locked planets 
        without oceans or atmospheres (Kaltenegger & Sasselov 2011).
+
+    Returns
+    --------
+   teq : float
+        instantaneous equilibrium temperature
     """
-    teq = Teff*((1. - albedo)/(beta*emissivity))**(1./4.)*np.sqrt(0.5*Rstar/r)
+    T0 = 278.5  # Teq of Earth for zero albedo [K]
+
+    # teq = Teff*((1. - albedo)/(beta*emissivity))**(1./4.)*np.sqrt(0.5*Rstar/r)
+    teq = T0 * ((1. - albedo) * L / (beta * emissivity * a ** 2)) ** (1. / 4.)
     return teq
 
 
