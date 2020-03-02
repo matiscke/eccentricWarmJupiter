@@ -30,6 +30,37 @@ def Teq(r, Rstar, Teff, albedo=0., emissivity=1., beta=1.):
     return teq
 
 
+def avgTeq(L, a, e=0., albedo=0., emissivity=1., beta=1.):
+    """compute the time-averaged equilibrium temperature as in Mendez+2017.
+
+    This uses eqn 16 in Méndez A, Rivera-Valentín EG (2017) Astrophys J 837:L1.
+    https://doi.org/10.3847/2041-8213/aa5f13"
+
+    Parameters
+    ----------
+    L : float
+        stellar luminosity [L_sol]
+    a : float
+        semi-major axis [au]
+    e : float
+        eccentricity
+    albedo : float
+        planetary albedo
+    emissivity : float
+        broadband thermal emissivity (usually ~ 1)
+    beta : float
+        fraction planet surface that re-radiates absorbed flux
+
+    Returns
+    -------
+    Teq : float
+        time-averaged equilibrium temperature 
+    
+    
+    """
+    T0 = 278.5  # Teq of Earth for zero albedo [K]
+    avgTeq = T0*(((1 - albedo)*L)/(beta*emissivity*a**2))**(1/4)*(1 - e**2/16 - (15/1024)*e**4)
+    return avgTeq
 
 def get_GLS(t, rv, rv_error):
     """ compute the Generalized Lomb-Scargle periodogram.
