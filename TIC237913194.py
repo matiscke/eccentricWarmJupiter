@@ -4,12 +4,12 @@ import juliet
 import plots
 
 datafolder = '/Users/schlecker/WINE/TIC237913194/data/'
-out_folder = 'test12'
+out_folder = 'out/test12'
 instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 instruments_rv = ['FEROS']
 colors_rv = ['orangered','cornflowerblue', 'purple', 'forestgreen']
 
-# target parameters for TIC237913194
+# Stellar parameters for TIC237913194
 Mstar = 1.03 # solar mass
 Mstar_err = .06
 Rstar = 1.088 # solar raddi
@@ -110,10 +110,11 @@ def equilibriumTemp():
     """ Compute additional quantities
     """
     # current best-fit params
-    a = 16785120000.
+    a = 0.1122
     e = 0.575
-    fig, ax = plots.plot_Teq_theta(a, e, Rstar*solarrad2m, Teff)
-
+    L = 1.196
+    fig, ax = plots.plot_Teq_theta(a, e, L, albedo=0., emissivity=1., beta=1.)
+    return fig, ax
 
 if __name__ == "__main__":
    priors, params = get_priors()

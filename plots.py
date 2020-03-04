@@ -2,6 +2,10 @@ import matplotlib.pyplot as plt
 import corner
 import numpy as np
 import aux
+try:
+    from popsyntools import plotstyle
+except ModuleNotFoundError:
+    print('module "popsyntools" not found. Skipping plot styles therein.')
 
 
 def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
@@ -62,11 +66,14 @@ def plot_photometry(dataset, results):
     ax.set_ylabel('Relative flux')
     return fig, ax
 
-def plot_Teq_theta(a, e, L, albedo=0., emissivity=1., beta=1.):
+def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
+                   beta=1., **kwargs):
     """plot equilibrium temperature as a function of true anomaly theta."""
-    fig, ax = plt.subplots()
+    if ax is None:
+        fig, ax = plt.subplots(figsize=plotstyle.set_size())
     theta = np.linspace(0., 2*np.pi, 200)
-    ax.plot(theta, aux.Teq(L, aux.r_of_theta(theta, a, e), albedo, emissivity, beta))
+    ax.plot(theta, aux.Teq(L, aux.r_of_theta(theta, a, e), albedo, emissivity,
+                           beta), **kwargs)
     ax.set_xlabel('true anomaly')
     ax.set_ylabel('equilibrium temperature')
     return fig, ax
