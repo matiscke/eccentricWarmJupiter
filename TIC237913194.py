@@ -113,8 +113,22 @@ def equilibriumTemp():
     a = 0.1122
     e = 0.575
     L = 1.196
-    fig, ax = plots.plot_Teq_theta(a, e, L, albedo=0., emissivity=1., beta=1.)
+
+    """ for instantaneous thermal equilibrium:
+    use the approximation in Kaltenegger+2011 (equation 3), 
+    assuming albedo=0, emissivity=1). Here is the orbital evolution for beta=0.5
+    (i.e., tidally locked) and beta=1.0 (fast rotator). 
+    Note that true anomaly is a spatial quantity and very different to the
+    temporal evolution.
+    """
+    fig, ax = plt.subplots(figsize=plotstyle.set_size())
+    for beta in [.5, 1.]:
+        fig, ax = plots.plot_Teq_theta(a, e, L, fig=fig, ax=ax, albedo=0.,
+                                       emissivity=1., beta=beta,
+                                       label='{:.2f}'.format(beta))
+    plt.legend(title='beta', loc='lower right')
     return fig, ax
+
 
 if __name__ == "__main__":
    priors, params = get_priors()
