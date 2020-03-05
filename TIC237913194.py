@@ -82,7 +82,7 @@ def read_photometry(datafolder, plotPhot=True):
     gp_times_lc = {}
     times_lc, fluxes, fluxes_error = {},{},{}
     for inst in instruments_lc:
-        times_lc[inst], fluxes[inst], fluxes_error[inst] = np.loadtxt(datafolder+inst.lower()+'.lc.dat',
+        times_lc[inst], fluxes[inst], fluxes_error[inst] = np.loadtxt(datafolder + inst +'.lc.dat',
                                                                       unpack=True, usecols=(0,1,2))
         if inst == 'TESSERACT+TESS':
             # mask outliers in TESS photometry
