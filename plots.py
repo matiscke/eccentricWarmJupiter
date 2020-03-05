@@ -74,6 +74,6 @@ def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
     theta = np.linspace(0., 2*np.pi, 200)
     ax.plot(theta, aux.Teq(L, aux.r_of_theta(theta, a, e), albedo, emissivity,
                            beta), **kwargs)
-    ax.set_xlabel('true anomaly')
-    ax.set_ylabel('equilibrium temperature')
+    ax.set_xlabel('true anomaly [rad]')
+    ax.set_ylabel('equilibrium temperature [K]')
     return fig, ax

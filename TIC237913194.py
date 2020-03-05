@@ -2,12 +2,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import juliet
 import plots
+try:
+    from popsyntools import plotstyle
+except ModuleNotFoundError:
+    print('module "popsyntools" not found. Skipping plot styles therein.')
 
-datafolder = '/Users/schlecker/WINE/TIC237913194/data/'
-out_folder = 'out/test12'
+datafolder = 'data/'
+out_folder = 'out/test13'
 instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 instruments_rv = ['FEROS']
-colors_rv = ['orangered','cornflowerblue', 'purple', 'forestgreen']
+colors_rv = ['orangered', 'cornflowerblue', 'purple', 'forestgreen']
 
 # Stellar parameters for TIC237913194
 Mstar = 1.03 # solar mass
