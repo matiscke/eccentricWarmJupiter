@@ -1,11 +1,47 @@
 import matplotlib.pyplot as plt
 import corner
+import juliet
 import numpy as np
 import aux
+import os
+
 try:
     from popsyntools import plotstyle
 except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
+
+def plot_posteriors(julietResults, out_folder):
+    # num_samps = len(julietResults.keys())
+    if not os.path.exists(out_folder+'/posteriorplots/'):
+        os.mkdir(out_folder+'/posteriorplots/')
+
+    posteriors = julietResults.posteriors
+    for k in posteriors['posterior_samples'].keys():
+        if k != 'unnamed':
+            val,valup,valdown = juliet.utils.get_quantiles(posteriors['posterior_samples'][k])
+            print(k,':',val,' + ',valup-val,' - ',val-valdown)
+            fig = plt.figure(figsize=(10,7))
+
+            plt.hist(posteriors['posterior_samples'][k],
+                     bins=int(len(posteriors['posterior_samples'][k])/50),
+                     histtype='step')
+            plt.axvline(x=val,color='cornflowerblue',lw=1.5,ls='--',
+                            label='{} = {:.5}'.format(k, val))
+            plt.axvline(x=valdown,color='cornflowerblue',lw=.5,ls='--')
+            plt.axvline(x=valup,color='cornflowerblue',lw=.5,ls='--')
+            plt.title('Posterior of : {}'.format(k))
+            plt.xlabel(k)
+            plt.ylabel('Frequency')
+            plt.legend(loc=1)
+            if k == 'P_p1':
+              k = 'Period_p1'
+              fil2save = out_folder+'/posteriorplots/Period_p1.pdf'
+            else:
+              fil2save = out_folder+'/posteriorplots/'+k+'.pdf'
+            plt.tight_layout()
+            fig.savefig(fil2save,dpi=400)
+            # plt.show()
+            plt.close(fig)
 
 
 def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
