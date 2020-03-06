@@ -74,7 +74,7 @@ def get_priors():
 
     return priors, params
 
-def read_photometry(datafolder, plotPhot=True):
+def read_photometry(datafolder, plotPhot=False):
     """ Read photometry from files. 
     
     Format has to be <Instrumentname>.lc.dat
@@ -106,7 +106,7 @@ def read_rv(datafolder):
     """read RVs"""
     times_rv, rvs, rvs_error = {},{},{}
     for inst in instruments_rv:
-        times_rv[inst], rvs[inst], rvs_error[inst] = np.loadtxt(datafolder+inst.lower()+'.rv.dat',
+        times_rv[inst], rvs[inst], rvs_error[inst] = np.loadtxt(datafolder+inst+'.rv.dat',
                                                                 unpack=True, usecols=(0,1,2))
     return times_rv, rvs, rvs_error
 
