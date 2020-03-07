@@ -12,6 +12,46 @@ except ModuleNotFoundError:
 
 au2m = 1.496e11
 
+def format(paramName):
+    """ Get Latex-formatted labels for some quantities."""
+    labels = {
+    'P_p1' : '$P \, [\mathrm{d}]$',
+    't0_p1' :'$t_0$',
+    'r1_p1' :'$r_1$',
+    'r2_p1' :'$r_2$',
+    'sesinomega_p1' : '$\sqrt{e}\sin(\omega \cdot 180/\pi)$',
+    'secosomega_p1' : '$\sqrt{e}\cos(\omega \cdot 180/\pi)$',
+    'rho' : r'$ \rho $',
+    'q1_TESSERACT+TESS' : '$q_\mathrm{1, TESS}$',
+    'q2_TESSERACT+TESS' : '$q_\mathrm{2, TESS}$',
+    'sigma_w_TESSERACT+TESS' : '$\sigma_\mathrm{w, TESS}$',
+    'mflux_TESSERACT+TESS' :   '$M_\mathrm{TESS}$',
+    'mdilution_TESSERACT+TESS' : '$D_\mathrm{TESS}$',
+    'GP_sigma_TESSERACT+TESS' :  '$GP_\mathrm{\sigma, TESS}$',
+    'GP_timescale_TESSERACT+TESS' :  '$GP_\mathrm{t, TESS}$',
+    'q1_CHAT+i' :  '$q_\mathrm{1, CHAT}$',
+    'q2_CHAT+i' :  '$q_\mathrm{2, CHAT}$',
+    'sigma_w_CHAT+i' : '$\sigma_\mathrm{w, CHAT}$',
+    'mflux_CHAT+i' :   '$M_\mathrm{CHAT}$',
+    'mdilution_CHAT+i' :'$D_\mathrm{CHAT}$',
+    'metallicity': '[Fe/H]',
+    'm': '$M_\mathrm{P} \, [\mathrm{M_\oplus}]$',
+    'a': '$a \, [\mathrm{au}]$',
+    'r': '$R_\mathrm{P} \, [\mathrm{R_{Jup}}]$',
+    'r_rEarth': '$R_\mathrm{P} \, [\mathrm{R_\oplus}]$',
+    'K_p1' : '$K \, [\mathrm{km/s}]$',
+    'mu_FEROS' :'$\mu_\mathrm{FEROS}\, [\mathrm{km/s}]$',
+    'sigma_w_FEROS' :'$\sigma_\mathrm{FEROS}\, [\mathrm{km/s}]$',
+    'rv_intercept' :'$b_\mathrm{RV}\, [\mathrm{km/s}]$',
+    'rv_slope' : '$m_\mathrm{RV}\, [\mathrm{km/s}]$',
+    'rv_quad' : '$q_\mathrm{RV}\, [\mathrm{km/s}]$'
+    }
+    try:
+        label = labels[paramName]
+    except KeyError:
+        label = paramName
+    return label
+
 def r_of_theta(theta, a, e=0.):
     """ compute orbital distance from true anomaly for an eccentric orbit."""
     r = a*(1-e**2)/(1+e*np.cos(theta))
