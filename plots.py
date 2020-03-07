@@ -65,12 +65,19 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
     fig : matplotlib figure
         figure containing the plot
     """
-    paramNames = list(params.keys())
-    if posterior_names is None:
-        posterior_names = paramNames
-    posterior_data = np.array([julietResults.posteriors['posterior_samples'][name]
-                               for name in paramNames if params[name][0] != 'fixed']).T
-    fig = corner.corner(posterior_data, labels=posterior_names, **kwargs)
+    # paramNames = list(params.keys())
+    # if posterior_names is None:
+    #     posterior_names = paramNames
+
+    # exclude fixed parameters
+    posteriors = [(name, julietResults.posteriors['posterior_samples'][name])
+                  for name in params.keys() if params[name][0] != 'fixed']
+
+
+    posterior_data = np.array([p[1] for p in posteriors]).T
+    fig = corner.corner(posterior_data, #posterior_names,
+                        labels=[aux.format(p[0]) for p in posteriors],
+                        **kwargs)
     return fig
 
 def plot_photometry(dataset, results):
