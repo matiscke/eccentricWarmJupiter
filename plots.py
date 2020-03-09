@@ -15,7 +15,13 @@ def plot_posteriors(julietResults, out_folder):
     if not os.path.exists(out_folder+'/posteriorplots/'):
         os.mkdir(out_folder+'/posteriorplots/')
 
-    posteriors = julietResults.posteriors
+    # exclude fixed parameters
+    try:
+        posteriors = julietResults.posteriors
+    except AttributeError:
+        # sometimes, juliet puts results into a tuple
+        posteriors = julietResults[0].posteriors
+
     for k in posteriors['posterior_samples'].keys():
         if k != 'unnamed':
             val,valup,valdown = juliet.utils.get_quantiles(posteriors['posterior_samples'][k])
@@ -70,8 +76,13 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
     #     posterior_names = paramNames
 
     # exclude fixed parameters
-    posteriors = [(name, julietResults.posteriors['posterior_samples'][name])
+    try:
+        posteriors = [(name, julietResults.posteriors['posterior_samples'][name])
                   for name in params.keys() if params[name][0] != 'fixed']
+    except AttributeError:
+        # sometimes, juliet puts results into a tuple
+        posteriors = [(name, julietResults[0].posteriors['posterior_samples'][name])
+                      for name in params.keys() if params[name][0] != 'fixed']
 
 
     posterior_data = np.array([p[1] for p in posteriors]).T
@@ -97,6 +108,10 @@ def plot_photometry(dataset, results):
     fig : matplotlib figure
         figure containing the plot
     """
+    if isinstance(results, tuple):
+        # sometimes, juliet.fit returns a tuple
+        results = results[0]
+
     fig, ax = plt.subplots()
     ax.errorbar(dataset.times_lc['TESSERACT+TESS'], dataset.data_lc['TESSERACT+TESS'],
                  yerr=dataset.errors_lc['TESSERACT+TESS'], fmt='.', alpha=0.1)
