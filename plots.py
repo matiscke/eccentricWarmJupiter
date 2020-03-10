@@ -120,9 +120,59 @@ def plot_photometry(dataset, results):
     # Plot portion of the lightcurve, axes, etc.:
     # plt.xlim([1326,1332])
     # plt.ylim([0.999,1.001])
-    ax.set_xlabel('Time (BJD - 2457000)')
+    ax.set_xlabel('Time (BJD - 2458669)')
     ax.set_ylabel('Relative flux')
     return fig, ax
+
+
+def plot_rv_fit(dataset, results):
+    """ plot RV time series and best-fit model."""
+    if isinstance(results, tuple):
+        # sometimes, juliet.fit returns a tuple
+        results = results[0]
+
+    min_time, max_time = np.min(dataset.times_rv['FEROS']) - 30, \
+                         np.max(dataset.times_rv['FEROS']) + 30
+    model_times = np.linspace(min_time, max_time, 1000)
+    # Now evaluate the model in those times, and substract the systemic-velocity to
+    # get the Keplerian signal:
+    keplerian = results.rv.evaluate('FEROS', t=model_times) - \
+                np.median(results.posteriors['posterior_samples']['mu_FEROS'])
+
+
+    fig, ax = plt.subplots()
+    # ax.errorbar(dataset.times_rv['FEROS'], dataset.data_rv['FEROS'],
+    #              yerr=dataset.errors_rv['FEROS'], fmt='.', alpha=0.1)
+
+    # Now plot the (systematic-velocity corrected) RVs:
+    instruments = dataset.inames_rv
+    colors = ['cornflowerblue', 'orangered']
+    for i in range(len(instruments)):
+        instrument = instruments[i]
+        # Evaluate the median jitter for the instrument:
+        jitter = np.median(results.posteriors['posterior_samples']['sigma_w_' + instrument])
+        # Evaluate the median systemic-velocity:
+        mu = np.median(results.posteriors['posterior_samples']['mu_' + instrument])
+        # Plot original data with original errorbars:
+        ax.errorbar(dataset.times_rv[instrument] - 2458669, dataset.data_rv[instrument] - mu, \
+                     yerr=dataset.errors_rv[instrument], fmt='o', \
+                     mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
+                     ms=7, label=instrument, zorder=10)
+
+        # Plot original errorbars + jitter (added in quadrature):
+        ax.errorbar(dataset.times_rv[instrument] - 2458669, dataset.data_rv[instrument] - mu, \
+                     yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
+                     mec=colors[i], ecolor=colors[i], mfc='white', label=instrument, \
+                     alpha=0.5, zorder=5)
+
+    # Plot Keplerian model:
+    ax.plot(model_times - 2458669, keplerian, color='black', zorder=1)
+    plt.title('1 Planet Fit | Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
+                                                                          results.posteriors['lnZerr']))
+    ax.set_xlabel('Time (BJD - 2458669)')
+    ax.set_ylabel('RV [km/s]')
+    return fig, ax
+
 
 def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
                    beta=1., **kwargs):
