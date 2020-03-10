@@ -147,14 +147,44 @@ def main(datafolder, out_folder):
         # GP_regressors_lc=gp_times_lc,
         out_folder=out_folder, verbose=True)
     results = dataset.fit(use_dynesty=True, n_live_points=500, ecclim=0.7,
-                          dynesty_nthreads=7)
+                          dynamic=True), # dynesty_sample='rslice',
+                          # dynesty_nthreads=1)
+    return
 
-    # plot posteriors
-    fig = plots.plot_cornerPlot(results, params)
+def showResults(datafolder, out_folder):
+    priors, params = get_priors()
+    times_lc, fluxes, fluxes_error, gp_times_lc = read_photometry(datafolder,
+                                                    plotPhot=False, outlierIndices=outlierIndices)
+    times_rv, rvs, rvs_error = read_rv(datafolder)
+    dataset = juliet.load(
+        priors=get_priors()[0], t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
+        t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
+        GP_regressors_lc=gp_times_lc,
+        out_folder=out_folder, verbose=True)
+    results = dataset.fit(use_dynesty=True, dynamic=True) # has to be ~same call as during fit
+
+    # dianaplot.plot(dataset, results)
+    #
+    #
+    # # plot posteriors
+    # fig = plots.plot_cornerPlot(results, params)
+    # # plt.show()
+    # fig.savefig(out_folder + '/cornerPosteriors.pdf')
+    # plots.plot_posteriors(results, out_folder)
+    #
+    # # Plot the photometry with fit:
+    # fig, ax = plots.plot_photometry(dataset, results)
+    # # plt.show()
+    # fig.savefig(out_folder + '/photometryFitted.pdf')
+
+    # plot RVs with fit:
+    fig, ax = plots.plot_rv_fit(dataset, results)
     plt.show()
     fig.savefig(out_folder + '/RVsFitted.pdf')
 
     return
 
 if __name__ == "__main__":
-    main(datafolder, out_folder)
+    # main(datafolder, out_folder)
+    showResults(datafolder, out_folder)
+    print('fit finished.')
