@@ -328,22 +328,22 @@ if instruments_lc is not None:
         # print(components)
         # First the data and the model on top:
         # ax1 = plt.subplot(gs[0])
-        ax1.errorbar(dataset.times_lc[inst]-2457000, dataset.data_lc[inst], dataset.errors_lc[inst],fmt='.',alpha=0.8, color='cornflowerblue')
-        ax1.plot(dataset.times_lc[inst]-2457000, lc_model, color='black', zorder=100)
+        ax1.errorbar(dataset.times_lc[inst]-2458669, dataset.data_lc[inst], dataset.errors_lc[inst],fmt='.',alpha=0.8, color='cornflowerblue')
+        ax1.plot(dataset.times_lc[inst]-2458669, lc_model, color='black', zorder=100)
         ax1.set_ylabel('Relative flux')
         ax1.set_title('{0} | Log-evidence: {1:.3f} $\pm$ {2:.3f}'.format(inst, results.posteriors['lnZ'],\
              results.posteriors['lnZerr']))
-        ax1.set_xlim(np.min(dataset.times_lc[inst]-2457000),np.max(dataset.times_lc[inst]-2457000))
+        ax1.set_xlim(np.min(dataset.times_lc[inst]-2458669),np.max(dataset.times_lc[inst]-2458669))
         ax1.minorticks_on()
         # ax1.xaxis.set_major_formatter(plt.NullFormatter())
 
         # Now the residuals:
         # ax2 = plt.subplot(gs[1])
-        ax2.errorbar(dataset.times_lc[inst]-2457000, (dataset.data_lc[inst]-lc_model)*1e6, \
+        ax2.errorbar(dataset.times_lc[inst]-2458669, (dataset.data_lc[inst]-lc_model)*1e6, \
                    dataset.errors_lc[inst]*1e6,fmt='.',alpha=0.8,color='cornflowerblue')
         ax2.set_ylabel('Residuals (ppm)')
-        ax2.set_xlabel('Time (BJD - 2457000)')
-        ax2.set_xlim(np.min(dataset.times_lc[inst]-2457000),np.max(dataset.times_lc[inst]-2457000))
+        ax2.set_xlabel('Time (BJD - 2458669)')
+        ax2.set_xlim(np.min(dataset.times_lc[inst]-2458669),np.max(dataset.times_lc[inst]-2458669))
         plt.tight_layout()
         fig.subplots_adjust(hspace=0) # to make the space between rows smaller
         ax2.minorticks_on()
@@ -486,29 +486,29 @@ for color,inst in zip(colors_rv,instruments):
     # Evaluate the median systemic-velocity:
     mu = np.median(posteriors['posterior_samples']['mu_'+inst])
     keplerian_rv = results.rv.evaluate(inst, t = dataset.times_rv[inst], GPregressors=dataset.times_rv[inst]) - mu
-    ax.fill_between(model_rv_times-2457000,kep_up68-mu, kep_low68-mu,\
+    ax.fill_between(model_rv_times-2458669,kep_up68-mu, kep_low68-mu,\
                  color='whitesmoke',alpha=1,zorder=1)
 
     # Plot original data with original errorbars:
-    ax.errorbar(dataset.times_rv[inst]-2457000, dataset.data_rv[inst]-mu,\
+    ax.errorbar(dataset.times_rv[inst]-2458669, dataset.data_rv[inst]-mu,\
                 yerr = dataset.errors_rv[inst],\
                 fmt='o',\
                 mec=color, ecolor=color, elinewidth=2, mfc = 'white', \
                 ms = 7, alpha=0.5, label=inst, zorder=10)
 
     # Plot original errorbars + jitter (added in quadrature):
-    ax.errorbar(dataset.times_rv[inst]-2457000, dataset.data_rv[inst]-mu,\
+    ax.errorbar(dataset.times_rv[inst]-2458669, dataset.data_rv[inst]-mu,\
                 yerr = np.sqrt(dataset.errors_rv[inst]**2+jitter**2), \
                 fmt='o',\
                 mec=color, ecolor=color, mfc = 'white', \
                 alpha = 0.5, zorder=5)
 
-    ax2.errorbar(dataset.times_rv[inst]-2457000, dataset.data_rv[inst]-keplerian_rv-mu,\
+    ax2.errorbar(dataset.times_rv[inst]-2458669, dataset.data_rv[inst]-keplerian_rv-mu,\
                 yerr = dataset.errors_rv[inst],\
                 fmt='o',\
                 mec=color, ecolor=color, elinewidth=2, mfc = 'white', \
                 ms = 7, alpha=0.5, zorder=10)
-    ax2.errorbar(dataset.times_rv[inst]-2457000,dataset.data_rv[inst]-keplerian_rv-mu,\
+    ax2.errorbar(dataset.times_rv[inst]-2458669,dataset.data_rv[inst]-keplerian_rv-mu,\
                 yerr = np.sqrt(dataset.errors_rv[inst]**2+jitter**2),\
                 fmt='o',\
                 mec=color, ecolor=color, mfc = 'white', \
@@ -522,7 +522,7 @@ for color,inst in zip(colors_rv,instruments):
     fout.close()    
 
 # Plot Keplerian model:
-ax.plot(model_rv_times-2457000, keplerian_model, color='black',zorder=3)
+ax.plot(model_rv_times-2458669, keplerian_model, color='black',zorder=3)
 ax2.axhline(y=0, ls='--', color='k', alpha=0.5)
 
 
@@ -542,9 +542,9 @@ plot_title += ') Model'
 ax.set_title('{0} | Log-evidence: {1:.3f} $\pm$ {2:.3f}'.format(plot_title, results.posteriors['lnZ'],\
        results.posteriors['lnZerr']))
 # plt.ylim([-20,20])
-ax.set_xlim([np.min(model_rv_times)-2457000, np.max(model_rv_times)-2457000])
-ax2.set_xlim([np.min(model_rv_times)-2457000, np.max(model_rv_times)-2457000])
-ax2.set_xlabel('Time (BJD - '+str(2457000)+')')
+ax.set_xlim([np.min(model_rv_times)-2458669, np.max(model_rv_times)-2458669])
+ax2.set_xlim([np.min(model_rv_times)-2458669, np.max(model_rv_times)-2458669])
+ax2.set_xlabel('Time (BJD - '+str(2458669)+')')
 ax2.set_ylabel('Residual RV (m/s)')
 ax2.minorticks_on()
 plt.tight_layout()
