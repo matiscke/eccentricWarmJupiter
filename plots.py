@@ -131,12 +131,16 @@ def plot_rv_fit(dataset, results):
         # sometimes, juliet.fit returns a tuple
         results = results[0]
 
-    min_time, max_time = np.min(dataset.times_rv['FEROS']) - 30, \
-                         np.max(dataset.times_rv['FEROS']) + 30
+    min_time, max_time = np.min(dataset.times_rv['FEROS']) - 10, \
+                         np.max(dataset.times_rv['FEROS']) + 10
     model_times = np.linspace(min_time, max_time, 1000)
-    # Now evaluate the model in those times, and substract the systemic-velocity to
-    # get the Keplerian signal:
-    keplerian = results.rv.evaluate('FEROS', t=model_times) - \
+    # Now evaluate the model in those times, including 1 and 2 sigma CIs,
+    # and substract the systemic-velocity to get the Keplerian signal:
+    keplerian, up68, low68 = results.rv.evaluate('FEROS', t=model_times,
+                                                 return_err=True) - \
+                np.median(results.posteriors['posterior_samples']['mu_FEROS'])
+    keplerian, up95, low95 = results.rv.evaluate('FEROS', t=model_times,
+                                                 return_err=True, alpha=.9545) - \
                 np.median(results.posteriors['posterior_samples']['mu_FEROS'])
 
 
@@ -165,9 +169,14 @@ def plot_rv_fit(dataset, results):
                      mec=colors[i], ecolor=colors[i], mfc='white', label=instrument, \
                      alpha=0.5, zorder=5)
 
-    # Plot Keplerian model:
+    # Plot Keplerian model and CIs:
     ax.plot(model_times - 2458669, keplerian, color='black', zorder=1)
-    plt.title('1 Planet Fit | Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
+    ax.fill_between(model_times - 2458669, up68, low68, \
+                     color='cornflowerblue', alpha=0.5, zorder=5)
+    ax.fill_between(model_times - 2458669, up95, low95, \
+                    color='cornflowerblue', alpha=0.3, zorder=6)
+
+    plt.title('Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
                                                                           results.posteriors['lnZerr']))
     ax.set_xlabel('Time (BJD - 2458669)')
     ax.set_ylabel('RV [km/s]')
