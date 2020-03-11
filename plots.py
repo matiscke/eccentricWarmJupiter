@@ -113,14 +113,16 @@ def plot_photometry(dataset, results):
         results = results[0]
 
     fig, ax = plt.subplots()
-    ax.errorbar(dataset.times_lc['TESSERACT+TESS'], dataset.data_lc['TESSERACT+TESS'],
-                 yerr=dataset.errors_lc['TESSERACT+TESS'], fmt='.', alpha=0.1)
-    ax.plot(dataset.times_lc['TESSERACT+TESS'], results.lc.evaluate('TESSERACT+TESS'))
+    ax.errorbar(dataset.times_lc['TESSERACT+TESS']- 2458000, dataset.data_lc['TESSERACT+TESS'],
+                 yerr=dataset.errors_lc['TESSERACT+TESS'], fmt = '.', alpha=.66,
+                 elinewidth = .5, ms = 1, color='black', label = 'TESS')
+    ax.plot(dataset.times_lc['TESSERACT+TESS']- 2458000, results.lc.evaluate('TESSERACT+TESS'),
+                lw=1, label='Full model')
 
     # Plot portion of the lightcurve, axes, etc.:
     # plt.xlim([1326,1332])
     # plt.ylim([0.999,1.001])
-    ax.set_xlabel('Time (BJD - 2458669)')
+    ax.set_xlabel('Time (BJD - 2458000)')
     ax.set_ylabel('Relative flux')
     return fig, ax
 
