@@ -112,12 +112,21 @@ def plot_photometry(dataset, results):
         # sometimes, juliet.fit returns a tuple
         results = results[0]
 
+    transit_model, transit_up68, transit_low68 = results.lc.evaluate('TESSERACT+TESS',
+                                                                     return_err=True)
+    transit_model, transit_up95, transit_low95 = results.lc.evaluate('TESSERACT+TESS',
+                                                                     return_err=True, alpha=.9545)
+
     fig, ax = plt.subplots()
     ax.errorbar(dataset.times_lc['TESSERACT+TESS']- 2458000, dataset.data_lc['TESSERACT+TESS'],
                  yerr=dataset.errors_lc['TESSERACT+TESS'], fmt = '.', alpha=.66,
                  elinewidth = .5, ms = 1, color='black', label = 'TESS')
-    ax.plot(dataset.times_lc['TESSERACT+TESS']- 2458000, results.lc.evaluate('TESSERACT+TESS'),
-                lw=1, label='Full model')
+    ax.plot(dataset.times_lc['TESSERACT+TESS']- 2458000, transit_model,
+                lw=0.5, label='Full model')
+    ax.fill_between(dataset.times_lc['TESSERACT+TESS']- 2458000, transit_up68, transit_low68, \
+                    color='cornflowerblue', alpha=0.5, zorder=5)
+    # ax.fill_between(dataset.times_lc['TESSERACT+TESS']- 2458000, transit_up95, transit_low95, \
+    #                 color='cornflowerblue', alpha=0.3, zorder=6)
 
     # Plot portion of the lightcurve, axes, etc.:
     # plt.xlim([1326,1332])
