@@ -75,15 +75,26 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
     # if posterior_names is None:
     #     posterior_names = paramNames
 
-    # exclude fixed parameters
-    try:
-        posteriors = [(name, julietResults.posteriors['posterior_samples'][name])
-                  for name in params.keys() if params[name][0] != 'fixed']
-    except AttributeError:
-        # sometimes, juliet puts results into a tuple
-        posteriors = [(name, julietResults[0].posteriors['posterior_samples'][name])
-                      for name in params.keys() if params[name][0] != 'fixed']
+    # back-transform r1, r2 to b, p
+    r1, r2 = julietResults.posteriors['posterior_samples']['r1_p1'], \
+             julietResults.posteriors['posterior_samples']['r2_p1']
+    b, p = juliet.utils.reverse_bp(r1, r2, 0., 1.)
 
+    # extract posteriors, excluding fixed parameters
+    try:
+        posteriorSamples = julietResults.posteriors['posterior_samples']
+    except AttributeError:
+        posteriorSamples = julietResults[0].posteriors['posterior_samples']
+
+    posteriors = []
+    for name in params.keys():
+        if (name not in ['r1_p1','r2_p1']) & (params[name][0] != 'fixed'):
+            # consider all non-fixed params, except special parametrizations
+            posteriors.append((name,posteriorSamples[name]))
+
+    # include special parametrizations
+    posteriors.append(('b', b))
+    posteriors.append(('p', p))
 
     posterior_data = np.array([p[1] for p in posteriors]).T
     fig = corner.corner(posterior_data, #posterior_names,
@@ -91,7 +102,8 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
                         **kwargs)
     return fig
 
-def plot_photometry(dataset, results):
+
+def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+TESS'):
     """ plot photometry and best fit from transit model.
 
     Parameters
