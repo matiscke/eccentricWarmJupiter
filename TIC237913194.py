@@ -10,11 +10,15 @@ except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
 datafolder = 'data/'
-out_folder = 'out/13_tess+chat+feros+noGP'
+# out_folder = 'out/13_tess+chat+feros+noGP'
 # out_folder = 'out/14_tess+chat+feros+GP'
-# out_folder = 'out/15_tess+chat+feros+CORALIE+noGP'
+out_folder = 'out/15_tess+chat+feros+CORALIE+noGP'
 # out_folder = 'out/16_tess+chat+feros+CORALIE+GP'
-GP = True # include Gaussian Process regressor for TESS data
+
+if 'GP' in out_folder and not 'noGP' in out_folder:
+    GP = True # include Gaussian Process regressor for TESS data
+else:
+    GP = False
 
 instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602]
@@ -145,30 +149,42 @@ def equilibriumTemp():
     plt.legend(title='beta', loc='lower right')
     return fig, ax
 
-def main(datafolder, out_folder):
-    priors, params = get_priors()
+def main(datafolder, out_folder, GP):
+    priors, params = get_priors(GP)
     times_lc, fluxes, fluxes_error, gp_times_lc = read_photometry(datafolder,
                                                     plotPhot=False, outlierIndices=outlierIndices)
     times_rv, rvs, rvs_error = read_rv(datafolder)
+
+    if GP:
+        GP_regressors = gp_times_lc
+    else:
+        GP_regressors = None
+
     dataset = juliet.load(
         priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
         t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
-        GP_regressors_lc=gp_times_lc,
+        GP_regressors_lc=GP_regressors,
         out_folder=out_folder, verbose=True)
     results = dataset.fit(use_dynesty=True, n_live_points=500, ecclim=0.7,
                           dynamic=True), # dynesty_sample='rslice',
                           # dynesty_nthreads=1)
     return
 
-def showResults(datafolder, out_folder):
-    priors, params = get_priors()
+def showResults(datafolder, out_folder, GP):
+    priors, params = get_priors(GP)
     times_lc, fluxes, fluxes_error, gp_times_lc = read_photometry(datafolder,
                                                     plotPhot=False, outlierIndices=outlierIndices)
     times_rv, rvs, rvs_error = read_rv(datafolder)
+
+    if GP:
+        GP_regressors = gp_times_lc
+    else:
+        GP_regressors = None
+
     dataset = juliet.load(
         priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
         t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
-        GP_regressors_lc=gp_times_lc,
+        GP_regressors_lc=GP_regressors,
         out_folder=out_folder, verbose=True)
     results = dataset.fit(use_dynesty=True, dynamic=True) # has to be ~same call as during fit
 
@@ -194,6 +210,6 @@ def showResults(datafolder, out_folder):
     return
 
 if __name__ == "__main__":
-    # main(datafolder, out_folder)
-    showResults(datafolder, out_folder)
+    main(datafolder, out_folder, GP)
+    # showResults(datafolder, out_folder)
     print('fit finished.')
