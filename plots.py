@@ -100,10 +100,16 @@ def plot_photometry(dataset, results):
         dataset as returned by juliet.load()
     results : results object
         a results object returned by juliet.fit()
+    fig : matplotlib figure object, optional
+        figure to plot on
+    axs : list (opional)
+        list containing axis objects
+    instrument : string (optional)
+        name of the instrument
 
     Returns
     --------
-    ax : matplotlib axis object
+    axs : list of matplotlib axis objects
         axis containing the plot
     fig : matplotlib figure
         figure containing the plot
@@ -112,28 +118,39 @@ def plot_photometry(dataset, results):
         # sometimes, juliet.fit returns a tuple
         results = results[0]
 
-    transit_model, transit_up68, transit_low68 = results.lc.evaluate('TESSERACT+TESS',
+    transit_model, transit_up68, transit_low68 = results.lc.evaluate(instrument,
                                                                      return_err=True)
-    transit_model, transit_up95, transit_low95 = results.lc.evaluate('TESSERACT+TESS',
+    transit_model, transit_up95, transit_low95 = results.lc.evaluate(instrument,
                                                                      return_err=True, alpha=.9545)
 
-    fig, ax = plt.subplots()
-    ax.errorbar(dataset.times_lc['TESSERACT+TESS']- 2458000, dataset.data_lc['TESSERACT+TESS'],
-                 yerr=dataset.errors_lc['TESSERACT+TESS'], fmt = '.', alpha=.66,
+    if axs is None:
+        fig, axs = plt.subplots(2, sharex=True)
+    axs[0].errorbar(dataset.times_lc[instrument]- 2458000, dataset.data_lc[instrument],
+                 yerr=dataset.errors_lc[instrument], fmt = '.', alpha=.66,
                  elinewidth = .5, ms = 1, color='black', label = 'TESS')
-    ax.plot(dataset.times_lc['TESSERACT+TESS']- 2458000, transit_model,
+    axs[0].plot(dataset.times_lc[instrument]- 2458000, transit_model,
                 lw=0.5, label='Full model')
-    ax.fill_between(dataset.times_lc['TESSERACT+TESS']- 2458000, transit_up68, transit_low68, \
+    axs[0].fill_between(dataset.times_lc[instrument]- 2458000, transit_up68, transit_low68,
                     color='cornflowerblue', alpha=0.5, zorder=5)
-    # ax.fill_between(dataset.times_lc['TESSERACT+TESS']- 2458000, transit_up95, transit_low95, \
+    # axs[0].fill_between(dataset.times_lc[instrument]- 2458000, transit_up95, transit_low95,
     #                 color='cornflowerblue', alpha=0.3, zorder=6)
+
+    # Now the residuals:
+    axs[1].errorbar(dataset.times_lc[instrument] - 2458000,
+                    (dataset.data_lc[instrument] - transit_model) * 1e6,
+                 dataset.errors_lc[instrument] * 1e6, fmt='.', alpha=0.66, elinewidth=.5,
+                 ms=1, color='black', label='residuals')
+
+    axs[1].set_ylabel('Residuals (ppm)')
+    axs[1].set_xlabel('Time (BJD - 2458000)')
+    axs[1].set_xlim(np.min(dataset.times_lc[instrument] - 2458000), np.max(dataset.times_lc[instrument] - 2458000))
 
     # Plot portion of the lightcurve, axes, etc.:
     # plt.xlim([1326,1332])
     # plt.ylim([0.999,1.001])
-    ax.set_xlabel('Time (BJD - 2458000)')
-    ax.set_ylabel('Relative flux')
-    return fig, ax
+    axs[1].set_xlabel('Time (BJD - 2458000)')
+    [ax.set_ylabel('Relative flux') for ax in axs]
+    return fig, axs
 
 
 def plot_rv_fit(dataset, results):
