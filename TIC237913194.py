@@ -10,8 +10,12 @@ except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
 datafolder = 'data/'
-out_folder = 'out/12_tess+chat+feros+GP'
-# out_folder = 'out/11_tess+chat+feros+noGP'
+out_folder = 'out/13_tess+chat+feros+noGP'
+# out_folder = 'out/14_tess+chat+feros+GP'
+# out_folder = 'out/15_tess+chat+feros+CORALIE+noGP'
+# out_folder = 'out/16_tess+chat+feros+CORALIE+GP'
+GP = True # include Gaussian Process regressor for TESS data
+
 instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602]
 instruments_rv = ['FEROS']
@@ -26,7 +30,7 @@ Teff = 5788
 
 solarrad2m = 6.957e8 # solar radii in meters
 
-def get_priors():
+def get_priors(GP=True):
     """ Define the priors. """
     priors = {}
     params = {
@@ -70,11 +74,16 @@ def get_priors():
     # 'rv_quad' : ['normal', [0.0,1.0]]
     }
 
+    if not GP:
+        del params['GP_sigma_TESSERACT+TESS']
+        del params['GP_timescale_TESSERACT+TESS']
+
     # transform priors into a format juliet understands
     priors = {}
     for name in params.keys():
         priors[name] = {'distribution' : params[name][0],
                         'hyperparameters' : params[name][1]}
+
 
     return priors, params
 
@@ -163,19 +172,19 @@ def showResults(datafolder, out_folder):
         out_folder=out_folder, verbose=True)
     results = dataset.fit(use_dynesty=True, dynamic=True) # has to be ~same call as during fit
 
-    dianaplot.plot(dataset, results)
+    # dianaplot.plot(dataset, results)
 
-    # # plot posteriors
-    # fig = plots.plot_cornerPlot(results, params)
-    # # plt.show()
+    # plot posteriors
+    fig = plots.plot_cornerPlot(results, params)
+    plt.show()
     # fig.savefig(out_folder + '/cornerPosteriors.pdf')
     # plots.plot_posteriors(results, out_folder)
     #
     # Plot the photometry with fit:
-    fig, ax = plots.plot_photometry(dataset, results)
+    # fig, ax = plots.plot_photometry(dataset, results)
     # fig.legend()
-    plt.show()
-    fig.savefig(out_folder + '/photometryFitted.pdf')
+    # plt.show()
+    # fig.savefig(out_folder + '/photometryFitted.pdf')
 
     # # plot RVs with fit:
     # fig, ax = plots.plot_rv_fit(dataset, results)
