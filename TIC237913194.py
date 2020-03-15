@@ -10,12 +10,12 @@ except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
 datafolder = 'data/'
-# out_folder = 'out/12_tess+chat+feros+GP'
+out_folder = 'out/17_tess+GP'
+# out_folder = 'out/18_tess+chat+GP'
 # out_folder = 'out/13_tess+chat+feros+noGP'
 # out_folder = 'out/14_tess+chat+feros+GP'
 # out_folder = 'out/15_tess+chat+feros+CORALIE+noGP'
 # out_folder = 'out/16_tess+chat+feros+CORALIE+GP'
-out_folder = 'out/17_tess+GP'
 
 # constrain Rp/Rs
 pl=0.0
@@ -204,31 +204,31 @@ def showResults(datafolder, out_folder, GP, **fitKwargs):
     # dianaplot.plot(dataset, results)
 
     # # plot posteriors
-    fig = plots.plot_cornerPlot(results, params, pl=results.pl, pu=results.pu,
-                                quantiles=[0.16, 0.5, 0.84], show_titles=True,
-                                title_kwargs={"fontsize": 14}, title_fmt='.2f',
-                                rasterized=True,
-                                label_kwargs={"fontsize": 14}
-                                )
-    # plt.show()
-    fig.savefig(out_folder + '/cornerPosteriors.pdf')
-
+    # fig = plots.plot_cornerPlot(results, params, pl=results.pl, pu=results.pu,
+    #                             quantiles=[0.16, 0.5, 0.84], show_titles=True,
+    #                             title_kwargs={"fontsize": 14}, title_fmt='.2f',
+    #                             rasterized=True,
+    #                             label_kwargs={"fontsize": 14}
+    #                             )
+    # fig.savefig(out_folder + '/cornerPosteriors.pdf')
+    #
     # plots.plot_posteriors(results, out_folder)
 
-    # # # Plot the photometry with fit:
-    # fig, ax = plots.plot_photometry(dataset, results)
-    # fig.legend()
-    # plt.show()
-    # fig.savefig(out_folder + '/photometryFitted.pdf')
+    # # Plot the photometry with fit:
+    fig, ax = plots.plot_photometry(dataset, results)
+    fig.legend()
+    plt.show()
+    fig.savefig(out_folder + '/photometryFitted.pdf')
 
     # # plot RVs with fit:
     # fig, ax = plots.plot_rv_fit(dataset, results)
     # plt.show()
     # fig.savefig(out_folder + '/RVsFitted.pdf')
 
-    return
+    return results
 
 if __name__ == "__main__":
     # main(datafolder, out_folder, GP)
-    showResults(datafolder, out_folder, GP, pl=pl, pu=pu)
-    print('fit finished.')
+    results = showResults(datafolder, out_folder, GP, pl=pl, pu=pu)
+    print(r'Log - evidence: {0: .3f} $\pm$ {1: .3f}'.format(results.posteriors['lnZ'],\
+                                                           results.posteriors['lnZerr']))
