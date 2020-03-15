@@ -215,8 +215,9 @@ def showResults(datafolder, out_folder, GP, **fitKwargs):
     # plots.plot_posteriors(results, out_folder)
 
     # # Plot the photometry with fit:
-    fig, ax = plots.plot_photometry(dataset, results)
-    fig.legend()
+    fig, axs = plots.plot_photometry(dataset, results)
+    axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+                  frameon=False, columnspacing=1.6)
     plt.show()
     fig.savefig(out_folder + '/photometryFitted.pdf')
 

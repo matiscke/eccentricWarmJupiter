@@ -172,7 +172,7 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
                                                                      return_err=True, alpha=.9545)
 
     if axs is None:
-        fig, axs = plt.subplots(2, sharex=True)
+        fig, axs = plt.subplots(2, sharex=True, gridspec_kw={'height_ratios': [5, 2]})
     axs[0].errorbar(dataset.times_lc[instrument]- 2458000, dataset.data_lc[instrument],
                  yerr=dataset.errors_lc[instrument], fmt = '.', alpha=.66,
                  elinewidth = .5, ms = 1, color='black', label = 'TESS')
