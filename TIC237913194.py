@@ -10,19 +10,28 @@ except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
 datafolder = 'data/'
+# out_folder = 'out/12_tess+chat+feros+GP'
 # out_folder = 'out/13_tess+chat+feros+noGP'
 # out_folder = 'out/14_tess+chat+feros+GP'
-out_folder = 'out/15_tess+chat+feros+CORALIE+noGP'
+# out_folder = 'out/15_tess+chat+feros+CORALIE+noGP'
 # out_folder = 'out/16_tess+chat+feros+CORALIE+GP'
+out_folder = 'out/17_tess+GP'
+
+# constrain Rp/Rs
+pl=0.0
+pu=0.5
+
 
 if 'GP' in out_folder and not 'noGP' in out_folder:
     GP = True # include Gaussian Process regressor for TESS data
 else:
     GP = False
 
-instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
+instruments_lc = ['TESSERACT+TESS']
+# instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602]
 instruments_rv = ['FEROS']
+# instruments_rv = ['FEROS', 'CORALIE']
 colors_rv = ['orangered', 'cornflowerblue', 'purple', 'forestgreen']
 
 # Stellar parameters for TIC237913194
@@ -36,7 +45,6 @@ solarrad2m = 6.957e8 # solar radii in meters
 
 def get_priors(GP=True):
     """ Define the priors. """
-    priors = {}
     params = {
     # planet 1
     'P_p1' : ['normal', [15.16, 0.2]],
@@ -58,19 +66,23 @@ def get_priors(GP=True):
     'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
     'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
 
-    # CHAT+i
-    'q1_CHAT+i' : ['uniform', [0., 1.]],
-    # 'q2_CHAT+i' : ['uniform', [0., 1.]],
-    'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
-    'mflux_CHAT+i' : ['normal', [0.0,0.1]],
-    'mdilution_CHAT+i' : ['fixed', 1.0],
+    # # CHAT+i
+    # 'q1_CHAT+i' : ['uniform', [0., 1.]],
+    # ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
+    # 'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
+    # 'mflux_CHAT+i' : ['normal', [0.0,0.1]],
+    # 'mdilution_CHAT+i' : ['fixed', 1.0],
 
-    # # RV planetary
-    'K_p1' : ['uniform', [0.05,0.25]], # it is given in km/s
+    # # # RV planetary
+    # 'K_p1' : ['uniform', [0.05,0.25]], # it is given in km/s
+    #
+    # # RV FEROS
+    # 'mu_FEROS' : ['uniform', [-10,40]],
+    # 'sigma_w_FEROS' : ['loguniform', [1e-5,1.]],
 
-    # RV FEROS
-    'mu_FEROS' : ['uniform', [-10,40]],
-    'sigma_w_FEROS' : ['loguniform', [1e-5,1.]],
+    # # RV CORALIE
+    # 'mu_CORALIE' : ['uniform', [-10,40]],
+    # 'sigma_w_CORALIE' : ['loguniform', [1e-5,1.]],
 
     # long-term trend
     # 'rv_intercept' : ['normal', [0.0,100]],
@@ -162,15 +174,15 @@ def main(datafolder, out_folder, GP):
 
     dataset = juliet.load(
         priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
-        t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
+        # t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
         GP_regressors_lc=GP_regressors,
         out_folder=out_folder, verbose=True)
     results = dataset.fit(use_dynesty=True, n_live_points=500, ecclim=0.7,
-                          dynamic=True), # dynesty_sample='rslice',
-                          # dynesty_nthreads=1)
+                          dynamic=True,
+                          pl=pl, pu=pu)
     return
 
-def showResults(datafolder, out_folder, GP):
+def showResults(datafolder, out_folder, GP, **fitKwargs):
     priors, params = get_priors(GP)
     times_lc, fluxes, fluxes_error, gp_times_lc = read_photometry(datafolder,
                                                     plotPhot=False, outlierIndices=outlierIndices)
@@ -183,20 +195,27 @@ def showResults(datafolder, out_folder, GP):
 
     dataset = juliet.load(
         priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
-        t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
+        # t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
         GP_regressors_lc=GP_regressors,
         out_folder=out_folder, verbose=True)
-    results = dataset.fit(use_dynesty=True, dynamic=True) # has to be ~same call as during fit
+    results = dataset.fit(use_dynesty=True, dynamic=True,
+                          **fitKwargs) # has to be ~same call as during fit
 
     # dianaplot.plot(dataset, results)
 
-    # plot posteriors
-    fig = plots.plot_cornerPlot(results, params)
+    # # plot posteriors
+    fig = plots.plot_cornerPlot(results, params, pl=results.pl, pu=results.pu,
+                                quantiles=[0.16, 0.5, 0.84],# show_titles=True,
+                                title_kwargs={"fontsize": 14}, title_fmt='.2f',
+                                rasterized=True,
+                                # label_kwargs={"fontsize": 22}
+                                )
     plt.show()
-    # fig.savefig(out_folder + '/cornerPosteriors.pdf')
+    fig.savefig(out_folder + '/cornerPosteriors.pdf')
+
     # plots.plot_posteriors(results, out_folder)
-    #
-    # Plot the photometry with fit:
+
+    # # # Plot the photometry with fit:
     # fig, ax = plots.plot_photometry(dataset, results)
     # fig.legend()
     # plt.show()
@@ -210,6 +229,6 @@ def showResults(datafolder, out_folder, GP):
     return
 
 if __name__ == "__main__":
-    main(datafolder, out_folder, GP)
-    # showResults(datafolder, out_folder)
+    # main(datafolder, out_folder, GP)
+    showResults(datafolder, out_folder, GP, pl=pl, pu=pu)
     print('fit finished.')

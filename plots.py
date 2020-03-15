@@ -50,7 +50,7 @@ def plot_posteriors(julietResults, out_folder):
             plt.close(fig)
 
 
-def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
+def plot_cornerPlot(julietResults, params, posterior_names=None, pl=0., pu=1., **kwargs):
     """ Produce a corner plot of posteriors from a juliet fit.
 
     Parameters
@@ -78,7 +78,7 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, **kwargs):
     # back-transform r1, r2 to b, p
     r1, r2 = julietResults.posteriors['posterior_samples']['r1_p1'], \
              julietResults.posteriors['posterior_samples']['r2_p1']
-    b, p = juliet.utils.reverse_bp(r1, r2, 0., 1.)
+    b, p = juliet.utils.reverse_bp(r1, r2, pl, pu)
 
     # extract posteriors, excluding fixed parameters
     try:
