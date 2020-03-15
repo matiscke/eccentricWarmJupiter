@@ -19,7 +19,7 @@ def plot_posteriors(julietResults, out_folder):
     try:
         posteriors = julietResults.posteriors
     except AttributeError:
-        # sometimes, juliet puts results into a tuple
+        # sometimes, juliet puts julietResults into a tuple
         posteriors = julietResults[0].posteriors
 
     for k in posteriors['posterior_samples'].keys():
@@ -70,15 +70,36 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, pl=0., pu=1., *
     --------
     fig : matplotlib figure
         figure containing the plot
+
+    Notes
+    ------
+    Assumes quadratic limb darkening for an instrument 'TESSERACT+TESS' and
+    linear limb darkening for 'CHAT+i' (only when present in julietResults object)
+
     """
     # paramNames = list(params.keys())
     # if posterior_names is None:
     #     posterior_names = paramNames
 
-    # back-transform r1, r2 to b, p
+    # back-transform r1, r2 to b, p and q1, q2 to u1, u2
     r1, r2 = julietResults.posteriors['posterior_samples']['r1_p1'], \
              julietResults.posteriors['posterior_samples']['r2_p1']
+    q1_tess, q2_tess = julietResults.posteriors['posterior_samples']['q1_TESSERACT+TESS'], \
+             julietResults.posteriors['posterior_samples']['q2_TESSERACT+TESS']
     b, p = juliet.utils.reverse_bp(r1, r2, pl, pu)
+    u1_tess, u2_tess = juliet.utils.reverse_ld_coeffs('quadratic', q1_tess, q2_tess)
+    try:
+        q1_chat = julietResults.posteriors['posterior_samples']['q1_CHAT+i']
+        u1_chat = juliet.utils.reverse_ld_coeffs('linear', q1_chat)
+    except:
+        pass
+
+    # back-transfrom ecc, omega parametrization
+    secosomega = julietResults.posteriors['posterior_samples']['secosomega_p1']
+    sesinomega = julietResults.posteriors['posterior_samples']['sesinomega_p1']
+    ecc = secosomega ** 2 + sesinomega ** 2
+    omega = np.arccos(secosomega / np.sqrt(ecc)) * np.pi/180
+
 
     # extract posteriors, excluding fixed parameters
     try:
@@ -88,18 +109,33 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, pl=0., pu=1., *
 
     posteriors = []
     for name in params.keys():
-        if (name not in ['r1_p1','r2_p1']) & (params[name][0] != 'fixed'):
+        if (name not in ['r1_p1','r2_p1','q1_TESSERACT+TESS','q2_TESSERACT+TESS',
+                         'q1_chat', 'secosomega_p1', 'sesinomega_p1']) & (params[name][0] != 'fixed'):
             # consider all non-fixed params, except special parametrizations
             posteriors.append((name,posteriorSamples[name]))
 
     # include special parametrizations
     posteriors.append(('b', b))
     posteriors.append(('p', p))
+    posteriors.append(('u1_TESSERACT+TESS', u1_tess))
+    posteriors.append(('u2_TESSERACT+TESS', u2_tess))
+    posteriors.append(('ecc', ecc))
+    posteriors.append(('omega', omega))
+    try:
+        posteriors.append(('u1_CHAT+i', u1_chat))
+    except:
+        pass
 
     posterior_data = np.array([p[1] for p in posteriors]).T
     fig = corner.corner(posterior_data, #posterior_names,
                         labels=[aux.format(p[0]) for p in posteriors],
                         **kwargs)
+    # tune look of corner figure
+    caxes = fig.axes
+    for ax in caxes:
+        ax.xaxis.set_label_coords(0.5, -0.45)
+        ax.yaxis.set_label_coords(-0.35, 0.5)
+    fig.subplots_adjust(left=0.08, right=0.995, bottom=0.09, top=0.97)
     return fig
 
 

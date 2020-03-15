@@ -205,12 +205,12 @@ def showResults(datafolder, out_folder, GP, **fitKwargs):
 
     # # plot posteriors
     fig = plots.plot_cornerPlot(results, params, pl=results.pl, pu=results.pu,
-                                quantiles=[0.16, 0.5, 0.84],# show_titles=True,
+                                quantiles=[0.16, 0.5, 0.84], show_titles=True,
                                 title_kwargs={"fontsize": 14}, title_fmt='.2f',
                                 rasterized=True,
-                                # label_kwargs={"fontsize": 22}
+                                label_kwargs={"fontsize": 14}
                                 )
-    plt.show()
+    # plt.show()
     fig.savefig(out_folder + '/cornerPosteriors.pdf')
 
     # plots.plot_posteriors(results, out_folder)
