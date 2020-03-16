@@ -1,9 +1,13 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import corner
 import juliet
 import numpy as np
 import aux
 import os
+
+# prevent mpl from needing an X server
+matplotlib.use('Agg')
 
 try:
     from popsyntools import plotstyle
@@ -133,9 +137,12 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, pl=0., pu=1., *
     # tune look of corner figure
     caxes = fig.axes
     for ax in caxes:
+        ax.spines['top'].set_visible(False)
+        ax.spines['right'].set_visible(False)
         ax.xaxis.set_label_coords(0.5, -0.45)
         ax.yaxis.set_label_coords(-0.35, 0.5)
-    fig.subplots_adjust(left=0.08, right=0.995, bottom=0.09, top=0.97)
+    fig.subplots_adjust(left=0.08, right=0.995, bottom=0.09, top=0.97,
+                        wspace=.15, hspace=.15)
     return fig
 
 
