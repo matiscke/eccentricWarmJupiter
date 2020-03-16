@@ -54,19 +54,13 @@ def plot_posteriors(julietResults, out_folder):
             plt.close(fig)
 
 
-def plot_cornerPlot(julietResults, params, posterior_names=None, pl=0., pu=1., **kwargs):
+def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs):
     """ Produce a corner plot of posteriors from a juliet fit.
 
     Parameters
     ------------
     julietResults : results object
         a results object returned by juliet.fit()
-    params : dictionary
-        dict containing:
-            keys: names of parameters included in the fit
-            values: list, where 0th element is a string describing the distribution, and
-            the 1st element are the hyperparameter(s) for this distribution.
-        Example: {'r1_p1' : ['uniform', [0.,1]]}
     posterior_names : list, optional
         labels for the plot. If None, use keys of the params dictionary
 
@@ -94,7 +88,7 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, pl=0., pu=1., *
     u1_tess, u2_tess = juliet.utils.reverse_ld_coeffs('quadratic', q1_tess, q2_tess)
     try:
         q1_chat = julietResults.posteriors['posterior_samples']['q1_CHAT+i']
-        u1_chat = juliet.utils.reverse_ld_coeffs('linear', q1_chat)
+        u1_chat, u1_chat = juliet.utils.reverse_ld_coeffs('linear', q1_chat, q1_chat)
     except:
         pass
 
@@ -112,9 +106,10 @@ def plot_cornerPlot(julietResults, params, posterior_names=None, pl=0., pu=1., *
         posteriorSamples = julietResults[0].posteriors['posterior_samples']
 
     posteriors = []
-    for name in params.keys():
+    for name in julietResults.data.priors:
         if (name not in ['r1_p1','r2_p1','q1_TESSERACT+TESS','q2_TESSERACT+TESS',
-                         'q1_chat', 'secosomega_p1', 'sesinomega_p1']) & (params[name][0] != 'fixed'):
+                'q1_CHAT+i', 'secosomega_p1', 'sesinomega_p1']) & \
+                (julietResults.data.priors[name]['distribution'] != 'fixed'):
             # consider all non-fixed params, except special parametrizations
             posteriors.append((name,posteriorSamples[name]))
 
