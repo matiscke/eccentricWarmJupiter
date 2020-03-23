@@ -10,13 +10,17 @@ except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
 datafolder = 'data/'
-out_folder = 'out/16_tess+noGP'
+# out_folder = 'out/16_tess+noGP'
 # out_folder = 'out/17_tess+GP'
 # out_folder = 'out/18_tess+chat+GP'
 # out_folder = 'out/19_tess+chat+feros+noGP'
 # out_folder = 'out/20_tess+chat+feros+GP'
 # out_folder = 'out/21_tess+chat+feros+CORALIE+noGP'
 # out_folder = 'out/22_tess+chat+feros+CORALIE+GP'
+# out_folder = 'out/23_tess+chat+feros+noGP'
+# out_folder = 'out/25_tess+chat+feros+noGP'
+# out_folder = 'out/26_tess+chat+feros+noGP'
+out_folder = 'out/27_tess+chat+feros+GP'
 
 # constrain Rp/Rs
 pl=0.0
@@ -28,8 +32,8 @@ if 'GP' in out_folder and not 'noGP' in out_folder:
 else:
     GP = False
 
-instruments_lc = ['TESSERACT+TESS']
-# instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
+# instruments_lc = ['TESSERACT+TESS']
+instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602]
 instruments_rv = ['FEROS']
 # instruments_rv = ['FEROS', 'CORALIE']
@@ -50,8 +54,10 @@ def get_priors(GP=True):
     # planet 1
     'P_p1' : ['normal', [15.16, 0.2]],
     't0_p1' : ['normal', [2458319.17, 0.2]],
-    'r1_p1' : ['uniform', [0.,1.]],
-    'r2_p1' : ['uniform', [0.,1.]],
+    # 'r1_p1' : ['uniform', [0.,1.]],
+    # 'r2_p1' : ['uniform', [0.,1.]],
+    'p_p1' : ['uniform', [0., .5]],
+    'b_p1' : ['uniform', [0., 1.5]],
     'sesinomega_p1' : ['uniform', [-1, 1]],
     'secosomega_p1' : ['uniform', [-1, 1]],
 
@@ -67,19 +73,19 @@ def get_priors(GP=True):
     'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
     'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
 
-    # # CHAT+i
-    # 'q1_CHAT+i' : ['uniform', [0., 1.]],
-    # ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
-    # 'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
-    # 'mflux_CHAT+i' : ['normal', [0.0,0.1]],
-    # 'mdilution_CHAT+i' : ['fixed', 1.0],
+    # CHAT+i
+    'q1_CHAT+i' : ['uniform', [0., 1.]],
+    ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
+    'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
+    'mflux_CHAT+i' : ['normal', [0.0,0.1]],
+    'mdilution_CHAT+i' : ['fixed', 1.0],
 
-    # # RV planetary
-    # 'K_p1' : ['uniform', [0.05,0.25]], # it is given in km/s
-    #
-    # # RV FEROS
-    # 'mu_FEROS' : ['uniform', [-10,40]],
-    # 'sigma_w_FEROS' : ['loguniform', [1e-5,1.]],
+    # RV planetary
+    'K_p1' : ['uniform', [0.05,0.25]], # it is given in km/s
+
+    # RV FEROS
+    'mu_FEROS' : ['uniform', [-10,40]],
+    'sigma_w_FEROS' : ['loguniform', [1e-5,1.]],
 
     # RV CORALIE
     # 'mu_CORALIE' : ['uniform', [-10,40]],
@@ -175,17 +181,17 @@ def main(datafolder, out_folder, GP):
 
     dataset = juliet.load(
         priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
-        # t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
+        t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
         GP_regressors_lc=GP_regressors,
         out_folder=out_folder, verbose=True)
-    results = dataset.fit(use_dynesty=True, n_live_points=500, ecclim=0.7,
+    results = dataset.fit(use_dynesty=False, n_live_points=1500, ecclim=0.7,
                           dynamic=True,
                           pl=pl, pu=pu)
     return
 
 def showResults(datafolder, out_folder, **fitKwargs):
     dataset = juliet.load(input_folder=out_folder)
-    results = dataset.fit(use_dynesty=True, dynamic=True,
+    results = dataset.fit(use_dynesty=False, dynamic=True,
                           **fitKwargs) # has to be ~same call as during fit
 
     # dianaplot.plot(dataset, results)
@@ -193,9 +199,9 @@ def showResults(datafolder, out_folder, **fitKwargs):
     # # plot posteriors
     fig = plots.plot_cornerPlot(results, pl=results.pl, pu=results.pu,
                                 quantiles=[0.16, 0.5, 0.84], show_titles=True,
-                                title_kwargs={"fontsize": 14}, title_fmt='.2f',
+                                title_kwargs={"fontsize": 16}, title_fmt='.2f',
                                 rasterized=True,
-                                label_kwargs={"fontsize": 14})
+                                label_kwargs={"fontsize": 16 })
     fig.savefig(out_folder + '/cornerPosteriors.pdf')
 
     # plot single posterior plots
@@ -218,6 +224,6 @@ def showResults(datafolder, out_folder, **fitKwargs):
     return results
 
 if __name__ == "__main__":
-    main(datafolder, out_folder, GP)
+    # main(datafolder, out_folder, GP)
     results = showResults(datafolder, out_folder, pl=pl, pu=pu)
 
