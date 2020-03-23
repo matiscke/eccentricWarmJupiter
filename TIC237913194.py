@@ -19,8 +19,8 @@ datafolder = 'data/'
 # out_folder = 'out/22_tess+chat+feros+CORALIE+GP'
 # out_folder = 'out/23_tess+chat+feros+noGP'
 # out_folder = 'out/25_tess+chat+feros+noGP'
-# out_folder = 'out/26_tess+chat+feros+noGP'
-out_folder = 'out/27_tess+chat+feros+GP'
+out_folder = 'out/26_tess+chat+feros+noGP'
+# out_folder = 'out/27_tess+chat+feros+GP'
 
 # constrain Rp/Rs
 pl=0.0

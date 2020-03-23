@@ -110,7 +110,7 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
         posteriorSamples = julietResults[0].posteriors['posterior_samples']
 
     # shift to relative t0
-    posteriorSamples['t0_p1'] -= 2458669
+    posteriorSamples['t0_p1'] -= 2458000
 
     posteriors = []
     for name in julietResults.data.priors:
@@ -244,27 +244,27 @@ def plot_rv_fit(dataset, results):
         # Evaluate the median systemic-velocity:
         mu = np.median(results.posteriors['posterior_samples']['mu_' + instrument])
         # Plot original data with original errorbars:
-        ax.errorbar(dataset.times_rv[instrument] - 2458669, dataset.data_rv[instrument] - mu, \
+        ax.errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
                      yerr=dataset.errors_rv[instrument], fmt='o', \
                      mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
                      ms=7, label=instrument, zorder=10)
 
         # Plot original errorbars + jitter (added in quadrature):
-        ax.errorbar(dataset.times_rv[instrument] - 2458669, dataset.data_rv[instrument] - mu, \
+        ax.errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
                      yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
                      mec=colors[i], ecolor=colors[i], mfc='white', label=instrument, \
                      alpha=0.5, zorder=5)
 
     # Plot Keplerian model and CIs:
-    ax.plot(model_times - 2458669, keplerian, color='black', zorder=1)
-    ax.fill_between(model_times - 2458669, up68, low68, \
+    ax.plot(model_times - 2458000, keplerian, color='black', zorder=1)
+    ax.fill_between(model_times - 2458000, up68, low68, \
                      color='cornflowerblue', alpha=0.5, zorder=5)
-    ax.fill_between(model_times - 2458669, up95, low95, \
+    ax.fill_between(model_times - 2458000, up95, low95, \
                     color='cornflowerblue', alpha=0.3, zorder=6)
 
     plt.title('Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
                                                                           results.posteriors['lnZerr']))
-    ax.set_xlabel('Time (BJD - 2458669)')
+    ax.set_xlabel('Time (BJD - 2458000)')
     ax.set_ylabel('RV [km/s]')
     return fig, ax
 
