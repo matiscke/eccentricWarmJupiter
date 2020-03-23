@@ -16,9 +16,11 @@ def format(paramName):
     """ Get Latex-formatted labels for some quantities."""
     labels = {
     'P_p1' : '$P \, [\mathrm{d}]$',
-    't0_p1' :'$t_0$',
+    't0_p1' :'$t_0 - 2458669\,\mathrm{d}$',
     'r1_p1' :'$r_1$',
     'r2_p1' :'$r_2$',
+    'b_p1' : '$b$',
+    'p_p1' : '$R_\mathrm{P}/R_\star$',
     'sesinomega_p1' : '$\sqrt{e}\sin(\omega \cdot 180/\pi)$',
     'secosomega_p1' : '$\sqrt{e}\cos(\omega \cdot 180/\pi)$',
     'ecc' : 'e',
