@@ -14,6 +14,12 @@ au2m = 1.496e11
 
 def format(paramName):
     """ Get Latex-formatted labels for some quantities."""
+    if paramName.startswith('log '):
+        paramName = paramName[4:]
+        log = True
+    else:
+        log = False
+
     labels = {
     'P_p1' : '$P \, [\mathrm{d}]$',
     't0_p1' :'$t_0 - 2458000\,\mathrm{d}$',
@@ -58,6 +64,9 @@ def format(paramName):
         label = labels[paramName]
     except KeyError:
         label = paramName
+
+    if log:
+        label = 'log ' + label
     return label
 
 def r_of_theta(theta, a, e=0.):

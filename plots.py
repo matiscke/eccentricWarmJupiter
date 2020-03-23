@@ -118,10 +118,14 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
                 'q1_CHAT+i', 'secosomega_p1', 'sesinomega_p1']) & \
                 (julietResults.data.priors[name]['distribution'] != 'fixed'):
             # consider all non-fixed params, except special parametrizations
-            posteriors.append((name,posteriorSamples[name]))
+            if julietResults.data.priors[name]['distribution'] == 'loguniform':
+                # plot log. distributed params in log
+                posteriors.append(('log '+name, np.log10(posteriorSamples[name])))
+            else:
+                posteriors.append((name,posteriorSamples[name]))
 
     # include special parametrizations
-    if b:
+    if b is not None:
         posteriors.append(('b', b))
         posteriors.append(('p', p))
     posteriors.append(('u1_TESSERACT+TESS', u1_tess))

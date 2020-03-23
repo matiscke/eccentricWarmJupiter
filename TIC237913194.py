@@ -19,8 +19,9 @@ datafolder = 'data/'
 # out_folder = 'out/22_tess+chat+feros+CORALIE+GP'
 # out_folder = 'out/23_tess+chat+feros+noGP'
 # out_folder = 'out/25_tess+chat+feros+noGP'
-out_folder = 'out/26_tess+chat+feros+noGP'
+# out_folder = 'out/26_tess+chat+feros+noGP'
 # out_folder = 'out/27_tess+chat+feros+GP'
+out_folder = 'out/test/27_tess+chat+feros+GP'
 
 # constrain Rp/Rs
 pl=0.0
@@ -194,7 +195,7 @@ def showResults(datafolder, out_folder, **fitKwargs):
     results = dataset.fit(use_dynesty=False, dynamic=True,
                           **fitKwargs) # has to be ~same call as during fit
 
-    # dianaplot.plot(dataset, results)
+    dianaplot.plot(dataset, results)
 
     # # plot posteriors
     fig = plots.plot_cornerPlot(results, pl=results.pl, pu=results.pu,
