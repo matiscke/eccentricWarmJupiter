@@ -80,11 +80,15 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
     #     posterior_names = paramNames
 
     # back-transform r1, r2 to b, p and q1, q2 to u1, u2
-    r1, r2 = julietResults.posteriors['posterior_samples']['r1_p1'], \
+    if 'r1_p1' in julietResults.posteriors['posterior_samples']:
+        r1, r2 = julietResults.posteriors['posterior_samples']['r1_p1'], \
              julietResults.posteriors['posterior_samples']['r2_p1']
+        b, p = juliet.utils.reverse_bp(r1, r2, pl, pu)
+    else:
+        b, p = None, None
+
     q1_tess, q2_tess = julietResults.posteriors['posterior_samples']['q1_TESSERACT+TESS'], \
-             julietResults.posteriors['posterior_samples']['q2_TESSERACT+TESS']
-    b, p = juliet.utils.reverse_bp(r1, r2, pl, pu)
+                       julietResults.posteriors['posterior_samples']['q2_TESSERACT+TESS']
     u1_tess, u2_tess = juliet.utils.reverse_ld_coeffs('quadratic', q1_tess, q2_tess)
     try:
         q1_chat = julietResults.posteriors['posterior_samples']['q1_CHAT+i']
@@ -105,6 +109,9 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
     except AttributeError:
         posteriorSamples = julietResults[0].posteriors['posterior_samples']
 
+    # shift to relative t0
+    posteriorSamples['t0_p1'] -= 2458669
+
     posteriors = []
     for name in julietResults.data.priors:
         if (name not in ['r1_p1','r2_p1','q1_TESSERACT+TESS','q2_TESSERACT+TESS',
@@ -114,8 +121,9 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
             posteriors.append((name,posteriorSamples[name]))
 
     # include special parametrizations
-    posteriors.append(('b', b))
-    posteriors.append(('p', p))
+    if b:
+        posteriors.append(('b', b))
+        posteriors.append(('p', p))
     posteriors.append(('u1_TESSERACT+TESS', u1_tess))
     posteriors.append(('u2_TESSERACT+TESS', u2_tess))
     posteriors.append(('ecc', ecc))
@@ -127,7 +135,7 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
 
     posterior_data = np.array([p[1] for p in posteriors]).T
     fig = corner.corner(posterior_data, #posterior_names,
-                        labels=[aux.format(p[0]) for p in posteriors],
+                        labels=[aux.format(p[0]) + '\n' for p in posteriors],
                         **kwargs)
     # tune look of corner figure
     caxes = fig.axes
