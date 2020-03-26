@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import juliet
 import plots
+import pickle
 import dianaplot
 
 try:
@@ -20,8 +21,9 @@ datafolder = 'data/'
 # out_folder = 'out/23_tess+chat+feros+noGP'
 # out_folder = 'out/25_tess+chat+feros+noGP'
 # out_folder = 'out/26_tess+chat+feros+noGP'
-# out_folder = 'out/27_tess+chat+feros+GP'
-out_folder = 'out/test/27_tess+chat+feros+GP'
+out_folder = 'out/27_tess+chat+feros+GP'
+# out_folder = 'out/28_tess+chat+feros+GP'
+# out_folder = 'out/test/27_tess+chat+feros+GP'
 
 # constrain Rp/Rs
 pl=0.0
@@ -188,43 +190,53 @@ def main(datafolder, out_folder, GP):
     results = dataset.fit(use_dynesty=False, n_live_points=1500, ecclim=0.7,
                           dynamic=True,
                           pl=pl, pu=pu)
-    return
+    return results
 
 def showResults(datafolder, out_folder, **fitKwargs):
     dataset = juliet.load(input_folder=out_folder)
-    results = dataset.fit(use_dynesty=False, dynamic=True,
+    try:
+        results = pickle.load(open(out_folder + '/results.pkl', 'rb'))
+    except FileNotFoundError:
+        results = dataset.fit(use_dynesty=False, dynamic=True,
                           **fitKwargs) # has to be ~same call as during fit
 
-    dianaplot.plot(dataset, results)
-
+    # dianaplot.plot(dataset, results)
+    #
     # # plot posteriors
-    fig = plots.plot_cornerPlot(results, pl=results.pl, pu=results.pu,
-                                quantiles=[0.16, 0.5, 0.84], show_titles=True,
-                                title_kwargs={"fontsize": 16}, title_fmt='.2f',
-                                rasterized=True,
-                                label_kwargs={"fontsize": 16 })
-    fig.savefig(out_folder + '/cornerPosteriors.pdf')
+    # fig = plots.plot_cornerPlot(results, pl=results.pl, pu=results.pu,
+    #                             quantiles=[0.16, 0.5, 0.84], show_titles=True,
+    #                             title_kwargs={"fontsize": 16}, title_fmt='.2f',
+    #                             rasterized=True,
+    #                             label_kwargs={"fontsize": 16 })
+    # fig.savefig(out_folder + '/cornerPosteriors.pdf')
+    #
+    # # plot single posterior plots
+    # plots.plot_posteriors(results, out_folder)
+    #
+    # # Plot the photometry with fit
+    # if dataset.ninstruments_lc is not None:
+    #     fig, axs = plots.plot_photometry(dataset, results)
+    #     axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+    #                   frameon=False, columnspacing=1.6)
+    #     fig.savefig(out_folder + '/photometryFitted.pdf')
+    #
+    # # plot RVs with fit
+    # if dataset.ninstruments_rv is not None:
+    #     fig, ax = plots.plot_rv_fit(dataset, results)
+    #     fig.savefig(out_folder + '/RVsFitted.pdf')
 
-    # plot single posterior plots
-    plots.plot_posteriors(results, out_folder)
-
-    # Plot the photometry with fit
-    if dataset.ninstruments_lc is not None:
-        fig, axs = plots.plot_photometry(dataset, results)
-        axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
-                      frameon=False, columnspacing=1.6)
-        fig.savefig(out_folder + '/photometryFitted.pdf')
-
-    # plot RVs with fit
-    if dataset.ninstruments_rv is not None:
-        fig, ax = plots.plot_rv_fit(dataset, results)
-        fig.savefig(out_folder + '/RVsFitted.pdf')
+    phasedPlots = plots.plot_phasedPhotometry(dataset, results, fig=None, axs=None,
+                                              instrument=None)
+    for inst in phasedPlots:
+        phasedPlots[inst][0].savefig(out_folder + '/phasedPhot_{}.pdf'.format(inst))
 
     print(r'Log - evidence: {0: .3f} $\pm$ {1: .3f}'.format(results.posteriors['lnZ'],\
                                                            results.posteriors['lnZerr']))
     return results
 
 if __name__ == "__main__":
-    # main(datafolder, out_folder, GP)
+    results = main(datafolder, out_folder, GP)
+    pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
+
     results = showResults(datafolder, out_folder, pl=pl, pu=pu)
 
