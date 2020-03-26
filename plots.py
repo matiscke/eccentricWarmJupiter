@@ -284,3 +284,133 @@ def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
     ax.set_xlabel('true anomaly [rad]')
     ax.set_ylabel('equilibrium temperature [K]')
     return fig, ax
+
+
+def plot_phasedPhotometry(dataset, results, instrument=None):
+    """ plot phased photometry and best fit from transit model.
+
+    Parameters
+    ------------
+    dataset : dataset object
+        dataset as returned by juliet.load()
+    results : results object
+        a results object returned by juliet.fit()
+    instrument : string (optional)
+        name of the instrument. If not given, create a plot for each instrument.
+
+    Returns
+    --------
+    plots : dictionary
+        dictionary with instrument names as keys. Each entry contains a tuple of
+        (fig, axs):
+        axs : list of matplotlib axis objects
+            axis containing the plot
+        fig : matplotlib figure
+            figure containing the plot
+    """
+    if isinstance(results, tuple):
+        # sometimes, juliet.fit returns a tuple
+        results = results[0]
+
+    if instrument is not None:
+        instruments = [instrument]
+    elif dataset.inames_lc is not None:
+        # make a plot for each photometric instrument. Ignore provided figure or axes.
+        instruments = dataset.inames_lc
+        axs = None
+    else:
+        # no photometric data in the dataset. Nothing to plot.
+        return
+
+    plots = {}
+
+    for inst in instruments:
+        fig, axs = plt.subplots(2, sharex=True, gridspec_kw={'height_ratios': [5, 2]})
+
+        # # Plot:
+        # fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [5, 2]}, facecolor='w',
+        #                                figsize=(10, 4))
+        #
+        # # gs = gridspec.GridSpec(2, 1, height_ratios=[2,1])
+        # nsamples = 1000
+        #
+        # fil = dataset.out_folder + '/lc_model_{}.pkl'.format(inst)
+        # if os.path.isfile(fil):
+        #     model = pickle.load(open(fil, 'rb'))
+        #     lc_model, lc_up68, lc_low68, components = model['lc_model'], model['lc_up68'], model['lc_low68'], model[
+        #         'components']
+        # else:
+        #     model = {}
+        #
+        #     model['lc_model'], model['lc_up68'], model['lc_low68'], model[
+        #         'components'] = lc_model, lc_up68, lc_low68, components = results.lc.evaluate(inst, \
+        #                                                                                       parameter_values=
+        #                                                                                       posteriors[
+        #                                                                                           'posterior_samples'], \
+        #                                                                                       t=dataset.times_lc[
+        #                                                                                           inst], \
+        #                                                                                       nsamples=nsamples, \
+        #                                                                                       return_err=True, \
+        #                                                                                       return_components=True, \
+        #                                                                                       GPregressors=
+        #                                                                                       dataset.times_lc[
+        #                                                                                           inst])
+        #     model['nsamples'] = nsamples
+        #
+        #     pickle.dump(model, open(fil, 'wb'))
+
+
+
+        for i_transit in dataset.numbering_transiting_planets:
+            # transit_model = results.lc.model[inst]['deterministic']
+            try:
+                gp_model = results.lc.model[inst]['GP']
+            except:
+                gp_model = np.zeros(len(dataset.data_lc[inst]))
+            try:
+                P = results.posteriors['posterior_samples']['P_p{}'.format(i_transit)]
+            except KeyError:
+                P = dataset.priors['P_p{}'.format(i_transit)]['hyperparameters']
+            try:
+                t0 = results.posteriors['posterior_samples']['t0_p{}'.format(i_transit)]
+            except KeyError:
+                t0 = dataset.priors['t0_p{}'.format(i_transit)]['hyperparameters']
+
+            phases_lc = juliet.utils.get_phases(dataset.times_lc[inst], P, t0)
+            idx = np.argsort(phases_lc)
+
+            c_model, c_components = results.lc.evaluate(inst, t=dataset.times_lc[inst], \
+                                                        # all_samples=True, \
+                                                        return_components=True, \
+                                                        GPregressors=dataset.times_lc[inst])
+
+
+            axs[0].errorbar(phases_lc,
+                             dataset.data_lc[inst] - (c_model - c_components['p{}'.format(i_transit)]) - gp_model, \
+                             yerr=dataset.errors_lc[inst], fmt='.', \
+                             alpha=0.1)
+
+            # Plot transit-only (divided by mflux) model:
+            axs[0].plot(phases_lc[idx], c_components['p{}'.format(i_transit)][idx] - c_components['lm'][idx],
+                     color='black', zorder=10)
+            axs[1].axhline(y=0, ls='--', color='k', alpha=0.5)
+            # axs[0].yaxis.set_major_formatter(plt.NullFormatter())
+            try:
+                axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(P, t0))
+            except:
+                axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(np.median(P), np.median(t0)))
+
+            axs[0].set_ylabel('Relative flux')
+            axs[0].set_xlim([-0.1, 0.1])  ### CHANGE THIS
+            # axs[0].set_ylim([0.9985,1.0015]) ### CHANGE THIS
+            axs[0].minorticks_on()
+            axs[1].errorbar(phases_lc, (dataset.data_lc[inst] - c_model - gp_model) * 1e6, \
+                         yerr=dataset.errors_lc[inst], fmt='.', alpha=0.1)
+            axs[1].set_ylabel('Residuals (ppm)')
+            axs[1].set_xlabel('Phases')
+            plt.tight_layout()
+            fig.subplots_adjust(hspace=0)  # to make the space between rows smaller
+            axs[1].minorticks_on()
+        plots[inst] = (fig, axs)
+
+    return plots
