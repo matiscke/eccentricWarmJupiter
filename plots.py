@@ -379,6 +379,13 @@ def plot_phasedPhotometry(dataset, results, instrument=None):
             phases_lc = juliet.utils.get_phases(dataset.times_lc[inst], P, t0)
             idx = np.argsort(phases_lc)
 
+
+            # # define denser time array (didn't work, Diana is on it)
+            # t_eva = np.linspace(min(dataset.times_lc[inst]),
+            #                     max(dataset.times_lc[inst]), num=500)
+
+
+
             c_model, c_components = results.lc.evaluate(inst, t=dataset.times_lc[inst], \
                                                         # all_samples=True, \
                                                         return_components=True, \
@@ -401,7 +408,7 @@ def plot_phasedPhotometry(dataset, results, instrument=None):
                 axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(np.median(P), np.median(t0)))
 
             axs[0].set_ylabel('Relative flux')
-            axs[0].set_xlim([-0.1, 0.1])  ### CHANGE THIS
+            axs[0].set_xlim([-0.015, 0.015])  ### CHANGE THIS
             # axs[0].set_ylim([0.9985,1.0015]) ### CHANGE THIS
             axs[0].minorticks_on()
             axs[1].errorbar(phases_lc, (dataset.data_lc[inst] - c_model - gp_model) * 1e6, \
@@ -409,7 +416,7 @@ def plot_phasedPhotometry(dataset, results, instrument=None):
             axs[1].set_ylabel('Residuals (ppm)')
             axs[1].set_xlabel('Phases')
             plt.tight_layout()
-            fig.subplots_adjust(hspace=0)  # to make the space between rows smaller
+            # fig.subplots_adjust(hspace=0)  # to make the space between rows smaller
             axs[1].minorticks_on()
         plots[inst] = (fig, axs)
 
