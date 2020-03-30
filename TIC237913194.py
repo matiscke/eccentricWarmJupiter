@@ -225,18 +225,22 @@ def showResults(datafolder, out_folder, **fitKwargs):
     #     fig, ax = plots.plot_rv_fit(dataset, results)
     #     fig.savefig(out_folder + '/RVsFitted.pdf')
 
-    phasedPlots = plots.plot_phasedPhotometry(dataset, results, fig=None, axs=None,
-                                              instrument=None)
-    for inst in phasedPlots:
-        phasedPlots[inst][0].savefig(out_folder + '/phasedPhot_{}.pdf'.format(inst))
+    # phasedPlots = plots.plot_phasedPhotometry(dataset, results, fig=None, axs=None,
+    #                                           instrument=None)
+    # for inst in phasedPlots:
+    #     phasedPlots[inst][0].savefig(out_folder + '/phasedPhot_{}.pdf'.format(inst))
+
+    # plot periodograms
+    fig, axs = plots.plot_periodograms(datafolder+'TIC237913194_activity.dat',
+                                       out_folder, results)
 
     print(r'Log - evidence: {0: .3f} $\pm$ {1: .3f}'.format(results.posteriors['lnZ'],\
                                                            results.posteriors['lnZerr']))
     return results
 
 if __name__ == "__main__":
-    results = main(datafolder, out_folder, GP)
-    pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
+    # results = main(datafolder, out_folder, GP)
+    # pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
 
     results = showResults(datafolder, out_folder, pl=pl, pu=pu)
 
