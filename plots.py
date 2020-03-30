@@ -664,3 +664,42 @@ def plot_periodograms(activityFile, plot_dir, results):
     fig.savefig(plot_dir + '/periodograms.pdf')
 
     return fig, axs
+
+
+def plot_RV_BS(activityFile, plot_dir, results):
+    """
+    Plot a scatter plot RV vs bisector span, color-coded by orbital phase.
+
+    Parameters
+    ----------
+    activityFile :  string
+        file containing the reduced time series
+    plot_dir : string
+        directory for the created plots
+    results : results object
+        a results object returned by juliet.fit()
+
+    Returns
+    --------
+    fig : matplotlib figure
+        figure containing the plot
+    ax : axis object
+        contains axis object with the plot
+    """
+
+    feros_dat = np.genfromtxt(activityFile, names=True)
+    feros_dat = pd.DataFrame(feros_dat).replace(-999, np.nan)
+    P = np.median(results.posteriors['posterior_samples']['P_p1'])
+    t0 = np.median(results.posteriors['posterior_samples']['t0_p1'])
+    feros_dat.loc[:, 'phase'] = juliet.utils.get_phases(feros_dat.BJD_OUT, P, t0)
+
+    fig, ax = plt.subplots()  # figsize=plotstyle.set_size())
+    ax.errorbar(feros_dat.RV, feros_dat.BS, xerr=feros_dat.RV_E, yerr=feros_dat.BS_E, c='k', fmt='o',
+                lw=1.8, zorder=0, markeredgewidth=1.8, elinewidth=1.5)
+    sc = ax.scatter(feros_dat.RV, feros_dat.BS, c=feros_dat.phase, s=150, zorder=10, cmap='twilight',
+                    vmin=-.5, vmax=.5, edgecolor='white')
+    fig.colorbar(sc, label='orbital phase')
+    ax.set_xlabel('RV [km/s]')
+    ax.set_ylabel('bisector span [km/s]')
+    fig.savefig(plot_dir + '/RV-BS.pdf')
+    return fig, ax

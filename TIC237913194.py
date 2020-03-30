@@ -231,8 +231,12 @@ def showResults(datafolder, out_folder, **fitKwargs):
     #     phasedPlots[inst][0].savefig(out_folder + '/phasedPhot_{}.pdf'.format(inst))
 
     # plot periodograms
-    fig, axs = plots.plot_periodograms(datafolder+'TIC237913194_activity.dat',
-                                       out_folder, results)
+    # fig, axs = plots.plot_periodograms(datafolder+'TIC237913194_activity.dat',
+    #                                    out_folder, results)
+
+    # plot RV-BS
+    fig, ax = plots.plot_RV_BS(datafolder+'TIC237913194_activity.dat', out_folder, results)
+
 
     print(r'Log - evidence: {0: .3f} $\pm$ {1: .3f}'.format(results.posteriors['lnZ'],\
                                                            results.posteriors['lnZerr']))
