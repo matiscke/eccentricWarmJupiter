@@ -190,6 +190,13 @@ def main(datafolder, out_folder, GP):
     results = dataset.fit(use_dynesty=False, n_live_points=1500, ecclim=0.7,
                           dynamic=True,
                           pl=pl, pu=pu)
+
+    lnZstr = r'Log - evidence: {0: .2f} $\pm$ {1: .2f}'.format(results.posteriors['lnZ'],\
+                                                           results.posteriors['lnZerr'])
+    print(lnZstr)
+    with open(out_folder + "/lnZ={:.2f}.txt".format(results.posteriors['lnZ']), "w") as text_file:
+        print(lnZstr, file=text_file)
+
     return results
 
 def showResults(datafolder, out_folder, **fitKwargs):
@@ -235,11 +242,11 @@ def showResults(datafolder, out_folder, **fitKwargs):
     #                                    out_folder, results)
 
     # plot RV-BS
-    fig, ax = plots.plot_RV_BS(datafolder+'TIC237913194_activity.dat', out_folder, results)
+    # fig, ax = plots.plot_RV_BS(datafolder+'TIC237913194_activity.dat', out_folder, results)
 
-
-    print(r'Log - evidence: {0: .3f} $\pm$ {1: .3f}'.format(results.posteriors['lnZ'],\
-                                                           results.posteriors['lnZerr']))
+    lnZstr = r'Log - evidence: {0: .2f} $\pm$ {1: .2f}'.format(results.posteriors['lnZ'],\
+                                                           results.posteriors['lnZerr'])
+    print(lnZstr)
     return results
 
 if __name__ == "__main__":
@@ -247,4 +254,3 @@ if __name__ == "__main__":
     # pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
 
     results = showResults(datafolder, out_folder, pl=pl, pu=pu)
-
