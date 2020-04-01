@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import juliet
 import plots
 import pickle
-import dianaplot
 
 try:
     from popsyntools import plotstyle
@@ -21,9 +20,10 @@ datafolder = 'data/'
 # out_folder = 'out/23_tess+chat+feros+noGP'
 # out_folder = 'out/25_tess+chat+feros+noGP'
 # out_folder = 'out/26_tess+chat+feros+noGP'
-out_folder = 'out/27_tess+chat+feros+GP'
+# out_folder = 'out/27_tess+chat+feros+GP'
 # out_folder = 'out/28_tess+chat+feros+GP'
-# out_folder = 'out/test/27_tess+chat+feros+GP'
+out_folder = 'out/29_feros'
+# out_folder = 'out/30_feros_noPlanet'
 
 # constrain Rp/Rs
 pl=0.0
@@ -35,8 +35,9 @@ if 'GP' in out_folder and not 'noGP' in out_folder:
 else:
     GP = False
 
+instruments_lc = []
 # instruments_lc = ['TESSERACT+TESS']
-instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
+# instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602]
 instruments_rv = ['FEROS']
 # instruments_rv = ['FEROS', 'CORALIE']
@@ -55,12 +56,19 @@ def get_priors(GP=True):
     """ Define the priors. """
     params = {
     # planet 1
-    'P_p1' : ['normal', [15.16, 0.2]],
-    't0_p1' : ['normal', [2458319.17, 0.2]],
+
+    # 'P_p1' : ['normal', [15.16, 0.2]],
+    'P_p1' : ['uniform', [1, 100]],
+
+    # 't0_p1' : ['normal', [2458319.17, 0.2]],
+    't0_p1' : ['uniform', [2458319.17 - 50, 2458319.17 + 50]],
+
+
     # 'r1_p1' : ['uniform', [0.,1.]],
     # 'r2_p1' : ['uniform', [0.,1.]],
-    'p_p1' : ['uniform', [0., .5]],
-    'b_p1' : ['uniform', [0., 1.5]],
+    # 'p_p1' : ['uniform', [0., .5]],
+    # 'b_p1' : ['uniform', [0., 1.5]],
+
     'sesinomega_p1' : ['uniform', [-1, 1]],
     'secosomega_p1' : ['uniform', [-1, 1]],
 
@@ -68,23 +76,25 @@ def get_priors(GP=True):
     'rho' : ['normal', [1120,110]],
 
     # TESS
-    'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
-    'q2_TESSERACT+TESS' : ['uniform', [0., 1.]],
-    'sigma_w_TESSERACT+TESS' : ['loguniform', [1e-5,1e5]],
-    'mflux_TESSERACT+TESS' : ['normal', [0.0,0.1]],
-    'mdilution_TESSERACT+TESS' : ['fixed', 1.0],
-    'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
-    'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
+    # 'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
+    # 'q2_TESSERACT+TESS' : ['uniform', [0., 1.]],
+    # 'sigma_w_TESSERACT+TESS' : ['loguniform', [1e-5,1e5]],
+    # 'mflux_TESSERACT+TESS' : ['normal', [0.0,0.1]],
+    # 'mdilution_TESSERACT+TESS' : ['fixed', 1.0],
+    # 'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
+    # 'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
 
     # CHAT+i
-    'q1_CHAT+i' : ['uniform', [0., 1.]],
-    ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
-    'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
-    'mflux_CHAT+i' : ['normal', [0.0,0.1]],
-    'mdilution_CHAT+i' : ['fixed', 1.0],
+    # 'q1_CHAT+i' : ['uniform', [0., 1.]],
+    # ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
+    # 'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
+    # 'mflux_CHAT+i' : ['normal', [0.0,0.1]],
+    # 'mdilution_CHAT+i' : ['fixed', 1.0],
 
     # RV planetary
     'K_p1' : ['uniform', [0.05,0.25]], # it is given in km/s
+    # 'K_p1' : ['fixed', 0.], # no-planet-case
+
 
     # RV FEROS
     'mu_FEROS' : ['uniform', [-10,40]],
@@ -210,42 +220,41 @@ def showResults(datafolder, out_folder, **fitKwargs):
         results = dataset.fit(use_dynesty=False, dynamic=True,
                           **fitKwargs) # has to be ~same call as during fit
 
-    # dianaplot.plot(dataset, results)
-    #
-    # # plot posteriors
-    # fig = plots.plot_cornerPlot(results, pl=results.pl, pu=results.pu,
-    #                             quantiles=[0.16, 0.5, 0.84], show_titles=True,
-    #                             title_kwargs={"fontsize": 16}, title_fmt='.2f',
-    #                             rasterized=True,
-    #                             label_kwargs={"fontsize": 16 })
-    # fig.savefig(out_folder + '/cornerPosteriors.pdf')
-    #
-    # # plot single posterior plots
-    # plots.plot_posteriors(results, out_folder)
-    #
-    # # Plot the photometry with fit
-    # if dataset.ninstruments_lc is not None:
-    #     fig, axs = plots.plot_photometry(dataset, results)
-    #     axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
-    #                   frameon=False, columnspacing=1.6)
-    #     fig.savefig(out_folder + '/photometryFitted.pdf')
-    #
-    # # plot RVs with fit
-    # if dataset.ninstruments_rv is not None:
-    #     fig, ax = plots.plot_rv_fit(dataset, results)
-    #     fig.savefig(out_folder + '/RVsFitted.pdf')
+    # plot posteriors
+    fig = plots.plot_cornerPlot(results, pl=results.pl, pu=results.pu,
+                                quantiles=[0.16, 0.5, 0.84], show_titles=True,
+                                title_kwargs={"fontsize": 16}, title_fmt='.2f',
+                                rasterized=True,
+                                label_kwargs={"fontsize": 16 })
+    fig.savefig(out_folder + '/cornerPosteriors.pdf')
 
-    # phasedPlots = plots.plot_phasedPhotometry(dataset, results, fig=None, axs=None,
-    #                                           instrument=None)
-    # for inst in phasedPlots:
-    #     phasedPlots[inst][0].savefig(out_folder + '/phasedPhot_{}.pdf'.format(inst))
+    # plot single posterior plots
+    plots.plot_posteriors(results, out_folder)
+
+    # Plot the photometry with fit
+    if dataset.ninstruments_lc > 0:
+        fig, axs = plots.plot_photometry(dataset, results)
+        axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+                      frameon=False, columnspacing=1.6)
+        fig.savefig(out_folder + '/photometryFitted.pdf')
+
+        phasedPlots = plots.plot_phasedPhotometry(dataset, results, instrument=None)
+        for inst in phasedPlots:
+            phasedPlots[inst][0].savefig(out_folder + '/phasedPhot_{}.pdf'.format(inst))
+
+    # plot RVs with fit
+    if dataset.ninstruments_rv > 0:
+        fig, ax = plots.plot_rv_fit(dataset, results)
+        fig.savefig(out_folder + '/RVsFitted.pdf')
+
+
 
     # plot periodograms
-    # fig, axs = plots.plot_periodograms(datafolder+'TIC237913194_activity.dat',
-    #                                    out_folder, results)
+    fig, axs = plots.plot_periodograms(datafolder+'TIC237913194_activity.dat',
+                                       out_folder, results)
 
     # plot RV-BS
-    # fig, ax = plots.plot_RV_BS(datafolder+'TIC237913194_activity.dat', out_folder, results)
+    fig, ax = plots.plot_RV_BS(datafolder+'TIC237913194_activity.dat', out_folder, results)
 
     lnZstr = r'Log - evidence: {0: .2f} $\pm$ {1: .2f}'.format(results.posteriors['lnZ'],\
                                                            results.posteriors['lnZerr'])
@@ -253,7 +262,7 @@ def showResults(datafolder, out_folder, **fitKwargs):
     return results
 
 if __name__ == "__main__":
-    # results = main(datafolder, out_folder, GP)
-    # pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
+    results = main(datafolder, out_folder, GP)
+    pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
 
     results = showResults(datafolder, out_folder, pl=pl, pu=pu)
