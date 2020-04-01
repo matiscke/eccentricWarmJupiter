@@ -101,8 +101,11 @@ def get_priors(GP=True):
     }
 
     if not GP:
-        del params['GP_sigma_TESSERACT+TESS']
-        del params['GP_timescale_TESSERACT+TESS']
+        try:
+            del params['GP_sigma_TESSERACT+TESS']
+            del params['GP_timescale_TESSERACT+TESS']
+        except KeyError:
+            pass
 
     # transform priors into a format juliet understands
     priors = {}
