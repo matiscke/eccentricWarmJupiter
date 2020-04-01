@@ -97,14 +97,13 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
     else:
         b, p = None, None
 
-    q1_tess, q2_tess = julietResults.posteriors['posterior_samples']['q1_TESSERACT+TESS'], \
-                       julietResults.posteriors['posterior_samples']['q2_TESSERACT+TESS']
-    u1_tess, u2_tess = juliet.utils.reverse_ld_coeffs('quadratic', q1_tess, q2_tess)
-    try:
+    if 'q1_TESSERACT+TESS' in julietResults.posteriors['posterior_samples']:
+        q1_tess, q2_tess = julietResults.posteriors['posterior_samples']['q1_TESSERACT+TESS'], \
+                           julietResults.posteriors['posterior_samples']['q2_TESSERACT+TESS']
+        u1_tess, u2_tess = juliet.utils.reverse_ld_coeffs('quadratic', q1_tess, q2_tess)
+    if 'q1_CHAT+i' in julietResults.posteriors['posterior_samples']:
         q1_chat = julietResults.posteriors['posterior_samples']['q1_CHAT+i']
         u1_chat, u1_chat = juliet.utils.reverse_ld_coeffs('linear', q1_chat, q1_chat)
-    except:
-        pass
 
     # back-transfrom ecc, omega parametrization
     secosomega = julietResults.posteriors['posterior_samples']['secosomega_p1']
@@ -135,13 +134,16 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
                 posteriors.append((name,posteriorSamples[name]))
 
     # include special parametrizations
+    posteriors.append(('ecc', ecc))
+    posteriors.append(('omega', omega))
     if b is not None:
         posteriors.append(('b', b))
         posteriors.append(('p', p))
-    posteriors.append(('u1_TESSERACT+TESS', u1_tess))
-    posteriors.append(('u2_TESSERACT+TESS', u2_tess))
-    posteriors.append(('ecc', ecc))
-    posteriors.append(('omega', omega))
+    try:
+        posteriors.append(('u1_TESSERACT+TESS', u1_tess))
+        posteriors.append(('u2_TESSERACT+TESS', u2_tess))
+    except:
+        pass
     try:
         posteriors.append(('u1_CHAT+i', u1_chat))
     except:
