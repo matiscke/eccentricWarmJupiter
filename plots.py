@@ -239,10 +239,10 @@ def plot_rv_fit(dataset, results):
     # Now evaluate the model in those times, including 1 and 2 sigma CIs,
     # and substract the systemic-velocity to get the Keplerian signal:
     keplerian, up68, low68 = results.rv.evaluate('FEROS', t=model_times,
-                                                 return_err=True) - \
+                                                 return_err=True, all_samples = True) - \
                 np.median(results.posteriors['posterior_samples']['mu_FEROS'])
     keplerian, up95, low95 = results.rv.evaluate('FEROS', t=model_times,
-                                                 return_err=True, alpha=.9545) - \
+                                                 return_err=True, all_samples = True, alpha=.9545) - \
                 np.median(results.posteriors['posterior_samples']['mu_FEROS'])
 
 
