@@ -249,7 +249,7 @@ def plot_rv_fit(dataset, results):
 
     # Now plot the (systematic-velocity corrected) RVs:
     instruments = dataset.inames_rv
-    colors = ['cornflowerblue', 'orangered']
+    colors = ['orangered', 'cornflowerblue']
     for i in range(len(instruments)):
         instrument = instruments[i]
         # Evaluate the median jitter for the instrument:
