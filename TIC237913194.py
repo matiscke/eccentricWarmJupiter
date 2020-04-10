@@ -22,8 +22,10 @@ datafolder = 'data/'
 # out_folder = 'out/26_tess+chat+feros+noGP'
 # out_folder = 'out/27_tess+chat+feros+GP'
 # out_folder = 'out/28_tess+chat+feros+GP'
-out_folder = 'out/29_feros'
+# out_folder = 'out/29_feros'
 # out_folder = 'out/30_feros_noPlanet'
+# out_folder = 'out/32b_feros_lognormalPprior'
+out_folder = 'out/33_feros_uniformPprior'
 
 # constrain Rp/Rs
 pl=0.0
@@ -58,10 +60,12 @@ def get_priors(GP=True):
     # planet 1
 
     # 'P_p1' : ['normal', [15.16, 0.2]],
-    'P_p1' : ['uniform', [1, 100]],
+    'P_p1' : ['uniform', [1, 30]],
+    # 'P_p1' : ['loguniform', [.1, 30]],
 
     # 't0_p1' : ['normal', [2458319.17, 0.2]],
-    't0_p1' : ['uniform', [2458319.17 - 50, 2458319.17 + 50]],
+    # 't0_p1' : ['uniform', [2458325.32623291, 2458449.32623291]],
+    't0_p1' : ['uniform', [2458670.0, 2458700.0]],
 
 
     # 'r1_p1' : ['uniform', [0.,1.]],
@@ -73,7 +77,7 @@ def get_priors(GP=True):
     'secosomega_p1' : ['uniform', [-1, 1]],
 
     # Star
-    'rho' : ['normal', [1120,110]],
+    # 'rho' : ['normal', [1120,110]],
 
     # TESS
     # 'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
@@ -92,20 +96,20 @@ def get_priors(GP=True):
     # 'mdilution_CHAT+i' : ['fixed', 1.0],
 
     # RV planetary
-    'K_p1' : ['uniform', [0.05,0.25]], # it is given in km/s
+    'K_p1' : ['uniform', [0., 1000.]],
     # 'K_p1' : ['fixed', 0.], # no-planet-case
 
 
     # RV FEROS
-    'mu_FEROS' : ['uniform', [-10,40]],
-    'sigma_w_FEROS' : ['loguniform', [1e-5,1.]],
+    'mu_FEROS' : ['uniform', [-1000, 1000]],
+    'sigma_w_FEROS' : ['loguniform', [0.01, 1e3]],
 
     # RV CORALIE
-    # 'mu_CORALIE' : ['uniform', [-10,40]],
-    # 'sigma_w_CORALIE' : ['loguniform', [1e-5,1.]],
+    # 'mu_CORALIE' : ['uniform', [-1000, 1000]],
+    # 'sigma_w_CORALIE' : ['loguniform', [0.01, 1e3]],
 
     # long-term trend
-    # 'rv_intercept' : ['normal', [0.0,100]],
+    # 'rv_intercept' : ['normal', [0.0,10000]],
     # 'rv_slope' : ['normal', [0.0,1.0]],
     # 'rv_quad' : ['normal', [0.0,1.0]]
     }
@@ -153,12 +157,25 @@ def read_photometry(datafolder, plotPhot=False, outlierIndices=None):
 
     return times_lc, fluxes, fluxes_error, gp_times_lc
 
-def read_rv(datafolder):
-    """read RVs"""
+def read_rv(datafolder, kms=True, subtract_median=True):
+    """read RVs
+
+    kms : boolean
+        set true if data given in km/s. We'll convert it to m/s.
+    subtract_median : boolean
+        subtract median RV from RVs
+    """
     times_rv, rvs, rvs_error = {},{},{}
     for inst in instruments_rv:
         times_rv[inst], rvs[inst], rvs_error[inst] = np.loadtxt(datafolder+inst+'.rv.dat',
                                                                 unpack=True, usecols=(0,1,2))
+        if kms:
+            # convert km/s to m/s
+            for data in [rvs[inst], rvs_error[inst]]:
+                data *= 1000
+        if subtract_median:
+            # subtract median rvs
+            rvs[inst] -= np.median(rvs[inst])
     return times_rv, rvs, rvs_error
 
 def equilibriumTemp():
@@ -188,7 +205,7 @@ def main(datafolder, out_folder, GP):
     priors, params = get_priors(GP)
     times_lc, fluxes, fluxes_error, gp_times_lc = read_photometry(datafolder,
                                                     plotPhot=False, outlierIndices=outlierIndices)
-    times_rv, rvs, rvs_error = read_rv(datafolder)
+    times_rv, rvs, rvs_error = read_rv(datafolder, kms=True, subtract_median=True)
 
     if GP:
         GP_regressors = gp_times_lc
