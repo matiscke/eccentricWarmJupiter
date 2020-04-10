@@ -25,7 +25,8 @@ datafolder = 'data/'
 # out_folder = 'out/29_feros'
 # out_folder = 'out/30_feros_noPlanet'
 # out_folder = 'out/32b_feros_lognormalPprior'
-out_folder = 'out/33_feros_uniformPprior'
+# out_folder = 'out/33_feros_uniformPprior'
+out_folder = 'out/34_feros_noPlanet'
 
 # constrain Rp/Rs
 pl=0.0
@@ -60,12 +61,14 @@ def get_priors(GP=True):
     # planet 1
 
     # 'P_p1' : ['normal', [15.16, 0.2]],
-    'P_p1' : ['uniform', [1, 30]],
+    # 'P_p1' : ['uniform', [1, 30]],
     # 'P_p1' : ['loguniform', [.1, 30]],
+    'P_p1' : ['fixed', 1.],
 
     # 't0_p1' : ['normal', [2458319.17, 0.2]],
     # 't0_p1' : ['uniform', [2458325.32623291, 2458449.32623291]],
-    't0_p1' : ['uniform', [2458670.0, 2458700.0]],
+    # 't0_p1' : ['uniform', [2458670.0, 2458700.0]],
+    't0_p1' : ['fixed', 1.],
 
 
     # 'r1_p1' : ['uniform', [0.,1.]],
@@ -73,8 +76,10 @@ def get_priors(GP=True):
     # 'p_p1' : ['uniform', [0., .5]],
     # 'b_p1' : ['uniform', [0., 1.5]],
 
-    'sesinomega_p1' : ['uniform', [-1, 1]],
-    'secosomega_p1' : ['uniform', [-1, 1]],
+    # 'sesinomega_p1' : ['uniform', [-1, 1]],
+    'sesinomega_p1' : ['fixed', 0.],
+    # 'secosomega_p1' : ['uniform', [-1, 1]],
+    'secosomega_p1' : ['fixed', 0.],
 
     # Star
     # 'rho' : ['normal', [1120,110]],
@@ -96,8 +101,8 @@ def get_priors(GP=True):
     # 'mdilution_CHAT+i' : ['fixed', 1.0],
 
     # RV planetary
-    'K_p1' : ['uniform', [0., 1000.]],
-    # 'K_p1' : ['fixed', 0.], # no-planet-case
+    # 'K_p1' : ['uniform', [0., 1000.]],
+    'K_p1' : ['fixed', 0.], # no-planet-case
 
 
     # RV FEROS
