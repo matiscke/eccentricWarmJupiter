@@ -114,12 +114,9 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
 
     # extract posteriors, excluding fixed parameters
     try:
-        posteriorSamples = julietResults.posteriors['posterior_samples']
+        posteriorSamples = julietResults.posteriors['posterior_samples'].copy()
     except AttributeError:
-        posteriorSamples = julietResults[0].posteriors['posterior_samples']
-
-    # shift to relative t0
-    posteriorSamples['t0_p1'] -= 2458000
+        posteriorSamples = julietResults[0].posteriors['posterior_samples'].copy()
 
     posteriors = []
     for name in julietResults.data.priors:

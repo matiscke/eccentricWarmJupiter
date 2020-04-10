@@ -22,7 +22,7 @@ def format(paramName):
 
     labels = {
     'P_p1' : '$P \, [\mathrm{d}]$',
-    't0_p1' :'$t_0 - 2458000\,\mathrm{d}$',
+    't0_p1' :'$t_0\,\mathrm{d}$',
     'r1_p1' :'$r_1$',
     'r2_p1' :'$r_2$',
     'b_p1' : '$b$',
