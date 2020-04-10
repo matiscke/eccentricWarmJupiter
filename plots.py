@@ -225,7 +225,8 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
 
 
 def plot_rv_fit(dataset, results):
-    """ plot RV time series and best-fit model."""
+    """ plot RV time series and best-fit model.
+    """
     if isinstance(results, tuple):
         # sometimes, juliet.fit returns a tuple
         results = results[0]
@@ -243,8 +244,9 @@ def plot_rv_fit(dataset, results):
                 np.median(results.posteriors['posterior_samples']['mu_FEROS'])
 
 
-    fig, ax = plt.subplots()
-    # ax.errorbar(dataset.times_rv['FEROS'], dataset.data_rv['FEROS'],
+    fig, axs = plt.subplots(2, sharex=True, figsize=[16, 5],
+                        gridspec_kw={'height_ratios': [5, 2]})
+    # axs[0].errorbar(dataset.times_rv['FEROS'], dataset.data_rv['FEROS'],
     #              yerr=dataset.errors_rv['FEROS'], fmt='.', alpha=0.1)
 
     # Now plot the (systematic-velocity corrected) RVs:
@@ -257,29 +259,47 @@ def plot_rv_fit(dataset, results):
         # Evaluate the median systemic-velocity:
         mu = np.median(results.posteriors['posterior_samples']['mu_' + instrument])
         # Plot original data with original errorbars:
-        ax.errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
+        axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
                      yerr=dataset.errors_rv[instrument], fmt='o', \
                      mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
                      ms=7, label=instrument, zorder=10)
 
         # Plot original errorbars + jitter (added in quadrature):
-        ax.errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
+        axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
                      yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
                      mec=colors[i], ecolor=colors[i], mfc='white', label=instrument, \
                      alpha=0.5, zorder=5)
 
-    # Plot Keplerian model and CIs:
-    ax.plot(model_times - 2458000, keplerian, color='black', zorder=1)
-    ax.fill_between(model_times - 2458000, up68, low68, \
-                     color='cornflowerblue', alpha=0.5, zorder=5)
-    ax.fill_between(model_times - 2458000, up95, low95, \
-                    color='cornflowerblue', alpha=0.3, zorder=6)
+        # plot residuals
+        real_model = results.rv.evaluate(instrument, t=dataset.times_rv[instrument], all_samples=True)
+        axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
+                        dataset.data_rv[instrument] - real_model,
+                        yerr=dataset.errors_rv[instrument], fmt='o', \
+                        mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
+                        ms=7, label=instrument, zorder=10)
 
-    plt.title('Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
-                                                                          results.posteriors['lnZerr']))
-    ax.set_xlabel('Time (BJD - 2458000)')
-    ax.set_ylabel('RV [km/s]')
-    return fig, ax
+        # and the error bars for jitter
+        axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
+                        dataset.data_rv[instrument] - real_model,
+                        yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
+                        mec=colors[i], ecolor=colors[i], mfc='white', label=instrument, \
+                        alpha=0.5, zorder=5)
+
+    # Plot Keplerian model and CIs:
+    axs[0].fill_between(model_times - 2458000, up68, low68, \
+                     color='cornflowerblue', alpha=0.5, zorder=5)
+    axs[0].fill_between(model_times - 2458000, up95, low95, \
+                    color='cornflowerblue', alpha=0.3, zorder=6)
+    axs[0].plot(model_times - 2458000, keplerian, color='black', zorder=1)
+
+   # # plt.title('Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
+   # #                                                                       results.posteriors['lnZerr']))
+    axs[0].set_xlim([min_time - 2458000, max_time - 2458000])
+    axs[0].set_ylabel('RV [m/s]')
+    axs[1].axhline(0., ls='--', lw=2, color='gray')
+    axs[1].set_xlabel('Time (BJD - 2458000)')
+    axs[1].set_ylabel('Residuals [m/s]')
+    return fig, axs
 
 
 def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
