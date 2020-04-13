@@ -218,10 +218,12 @@ def main(datafolder, out_folder, GP):
         GP_regressors = None
 
     dataset = juliet.load(
-        priors=priors, t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
+        priors=priors,
+        t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
         t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
         GP_regressors_lc=GP_regressors,
         out_folder=out_folder, verbose=True)
+
     results = dataset.fit(use_dynesty=False, n_live_points=1500, ecclim=0.7,
                           dynamic=True,
                           pl=pl, pu=pu)

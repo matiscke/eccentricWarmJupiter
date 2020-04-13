@@ -101,15 +101,25 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
         q1_tess, q2_tess = julietResults.posteriors['posterior_samples']['q1_TESSERACT+TESS'], \
                            julietResults.posteriors['posterior_samples']['q2_TESSERACT+TESS']
         u1_tess, u2_tess = juliet.utils.reverse_ld_coeffs('quadratic', q1_tess, q2_tess)
+    else:
+        u1_tess = None
+        u2_tess = None
     if 'q1_CHAT+i' in julietResults.posteriors['posterior_samples']:
         q1_chat = julietResults.posteriors['posterior_samples']['q1_CHAT+i']
         u1_chat, u1_chat = juliet.utils.reverse_ld_coeffs('linear', q1_chat, q1_chat)
+    else:
+        u1_chat = None
+        u2_chat = None
 
-    # back-transfrom ecc, omega parametrization
-    secosomega = julietResults.posteriors['posterior_samples']['secosomega_p1']
-    sesinomega = julietResults.posteriors['posterior_samples']['sesinomega_p1']
-    ecc = secosomega ** 2 + sesinomega ** 2
-    omega = np.arccos(secosomega / np.sqrt(ecc)) * np.pi/180
+    if 'secosomega_p1' in julietResults.posteriors['posterior_samples']:
+        # back-transfrom ecc, omega parametrization
+        secosomega = julietResults.posteriors['posterior_samples']['secosomega_p1']
+        sesinomega = julietResults.posteriors['posterior_samples']['sesinomega_p1']
+        ecc = secosomega ** 2 + sesinomega ** 2
+        omega = np.arccos(secosomega / np.sqrt(ecc)) * np.pi/180
+    else:
+        ecc = None
+        omega = None
 
 
     # extract posteriors, excluding fixed parameters
@@ -131,20 +141,17 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
                 posteriors.append((name,posteriorSamples[name]))
 
     # include special parametrizations
-    posteriors.append(('ecc', ecc))
-    posteriors.append(('omega', omega))
+    if ecc is not None:
+        posteriors.append(('ecc', ecc))
+        posteriors.append(('omega', omega))
     if b is not None:
         posteriors.append(('b', b))
         posteriors.append(('p', p))
-    try:
+    if u1_tess is not None:
         posteriors.append(('u1_TESSERACT+TESS', u1_tess))
         posteriors.append(('u2_TESSERACT+TESS', u2_tess))
-    except:
-        pass
-    try:
+    if u1_chat is not None:
         posteriors.append(('u1_CHAT+i', u1_chat))
-    except:
-        pass
 
     posterior_data = np.array([p[1] for p in posteriors]).T
     fig = corner.corner(posterior_data, #posterior_names,
@@ -492,7 +499,10 @@ def plot_periodograms(activityFile, plot_dir, results):
     feros_dat = np.genfromtxt(activityFile, names=True)
     feros_dat = pd.DataFrame(feros_dat).replace(-999, np.nan)
 
-    transit_per = np.median(results.posteriors['posterior_samples']['P_p1'])
+    try:
+        transit_per = np.median(results.posteriors['posterior_samples']['P_p1'])
+    except KeyError:
+        transit_per = None
 
     # =============================================================================
     # Periodograms - FEROS
@@ -593,13 +603,13 @@ def plot_periodograms(activityFile, plot_dir, results):
         axs[0].annotate(labels[ind], xy=[.815, rv_faps[ind]], va='center',
                         xytext=[.86, rv_faps[1] + annotOffsets[ind]], size=10,
                         xycoords=('axes fraction', 'data'), arrowprops=dict(arrowstyle="-"))
-    axs[0].axvline(1/transit_per,  lw=1.5, linestyle='dashed', color='C1')
-
+    if transit_per is not None:
+        axs[0].axvline(1/transit_per,  lw=1.5, linestyle='dashed', color='C1')
+        axs[0].annotate('P = {:.2f} d'.format(transit_per), [1/transit_per, 1.05], color='C1',
+                    ha='center', xycoords=('data', 'axes fraction'))
     # axs[0].set_xscale('log')
     # axs[0].set_xlabel('Frequency [1/d]')
     axs[0].set_ylabel('Power')
-    axs[0].annotate('P = {:.2f} d'.format(transit_per), [1/transit_per, 1.05], color='C1',
-                    ha='center', xycoords=('data', 'axes fraction'))
     axs[0].annotate('RV', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -615,7 +625,8 @@ def plot_periodograms(activityFile, plot_dir, results):
     for ind in range(len(ha_faps)):
         axs[1].axhline(ha_faps[ind],
             label = labels[ind], lw=1.5, linestyle = ltype[ind], c='black')
-    axs[1].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
+    if transit_per is not None:
+        axs[1].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[1].set_xscale('log')
     # axs[1].set_xlabel('Period [d]')
     axs[1].set_ylabel('Power')
@@ -632,7 +643,8 @@ def plot_periodograms(activityFile, plot_dir, results):
     for ind in range(len(rhk_faps)):
         axs[2].axhline(rhk_faps[ind],
             label = labels[ind], lw=1.5, linestyle = ltype[ind], c='black')
-    axs[2].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
+    if transit_per is not None:
+        axs[2].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[2].set_xscale('log')
     # axs[2].set_xlabel('Period [d]')
     axs[2].set_ylabel('Power')
@@ -649,7 +661,8 @@ def plot_periodograms(activityFile, plot_dir, results):
     for ind in range(len(na_faps)):
         axs[3].axhline(na_faps[ind],
             label = labels[ind], lw=1.5, linestyle = ltype[ind], c='black')
-    axs[3].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
+    if transit_per is not None:
+        axs[3].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[3].set_xscale('log')
     # axs[3].set_xlabel('Period [d]')
     axs[3].set_ylabel('Power')
@@ -666,7 +679,8 @@ def plot_periodograms(activityFile, plot_dir, results):
     for ind in range(len(he_faps)):
         axs[4].axhline(he_faps[ind],
             label = labels[ind], lw=1.5, linestyle = ltype[ind], c='black')
-    axs[4].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
+    if transit_per is not None:
+        axs[4].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[4].set_xscale('log')
     # axs[4].set_xlabel('Period [d]')
     axs[4].set_xlabel('Frequency [1/d]')
@@ -706,6 +720,9 @@ def plot_RV_BS(activityFile, plot_dir, results):
         contains axis object with the plot
     """
 
+    if not 'P_p1' in results.posteriors['posterior_samples']:
+        # for no-planet fits
+        return None, None
     feros_dat = np.genfromtxt(activityFile, names=True)
     feros_dat = pd.DataFrame(feros_dat).replace(-999, np.nan)
     P = np.median(results.posteriors['posterior_samples']['P_p1'])
