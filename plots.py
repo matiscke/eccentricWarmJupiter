@@ -459,7 +459,7 @@ def plot_phasedPhotometry(dataset, results, instrument=None):
     return plots
 
 
-def plot_periodograms(activityFile, plot_dir, results):
+def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
     """
     Produce periodograms of RV and activity indices
 
@@ -474,6 +474,8 @@ def plot_periodograms(activityFile, plot_dir, results):
         directory for the created plots
     results : results object
         a results object returned by juliet.fit()
+    saveFig : boolean
+        flag to save the figure as pdf
 
     Returns
     --------
@@ -595,7 +597,7 @@ def plot_periodograms(activityFile, plot_dir, results):
     # axs[0].set_ylabel('RV [km/s]')
 
     # RV periodogram
-    annotOffsets = [-.12, 0, .12]
+    annotOffsets = [-.10, 0, .10]
     axs[0].plot(rv_frequency, rv_power)
     for ind in range(len(rv_faps)):
         axs[0].axhline(rv_faps[ind], xmax=0.81,
@@ -694,7 +696,8 @@ def plot_periodograms(activityFile, plot_dir, results):
     [ax.tick_params(direction='in', top=True, right=True) for ax in axs]
     # fig.subplots_adjust(hspace = .03, wspace=0.4)
     plt.show()
-    fig.savefig(plot_dir + '/periodograms.pdf')
+    if saveFig:
+        fig.savefig(plot_dir + '/periodograms.pdf')
 
     return fig, axs
 
