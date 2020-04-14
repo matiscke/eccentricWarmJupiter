@@ -53,12 +53,12 @@ def format(paramName):
     'a': '$a \, [\mathrm{au}]$',
     'r': '$R_\mathrm{P} \, [\mathrm{R_{Jup}}]$',
     'r_rEarth': '$R_\mathrm{P} \, [\mathrm{R_\oplus}]$',
-    'K_p1' : '$K \, [\mathrm{km/s}]$',
-    'mu_FEROS' :'$\mu_\mathrm{FEROS}\, [\mathrm{km/s}]$',
-    'sigma_w_FEROS' :'$\sigma_\mathrm{FEROS}\, [\mathrm{km/s}]$',
-    'rv_intercept' :'$b_\mathrm{RV}\, [\mathrm{km/s}]$',
-    'rv_slope' : '$m_\mathrm{RV}\, [\mathrm{km/s}]$',
-    'rv_quad' : '$q_\mathrm{RV}\, [\mathrm{km/s}]$'
+    'K_p1' : '$K \, [\mathrm{m/s}]$',
+    'mu_FEROS' :'$\mu_\mathrm{FEROS}\, [\mathrm{m/s}]$',
+    'sigma_w_FEROS' :'$\sigma_\mathrm{FEROS}\, [\mathrm{m/s}]$',
+    'rv_intercept' :'$b_\mathrm{RV}\, [\mathrm{m/s}]$',
+    'rv_slope' : '$m_\mathrm{RV}\, [\mathrm{m/s}]$',
+    'rv_quad' : '$q_\mathrm{RV}\, [\mathrm{m/s}]$'
     }
     try:
         label = labels[paramName]
