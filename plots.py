@@ -753,7 +753,9 @@ def plot_RV_BS(activityFile, plot_dir, results):
                 lw=1.8, zorder=0, markeredgewidth=1.8, elinewidth=1.5)
     sc = ax.scatter(feros_dat.RV, feros_dat.BS, c=feros_dat.phase, s=150, zorder=10, cmap='twilight',
                     vmin=-.5, vmax=.5, edgecolor='white')
-    fig.colorbar(sc, label='orbital phase')
+    cbar = fig.colorbar(sc, label='orbital phase')
+    cbar.set_ticks(np.arange(-.5, .51, .25))
+    cbar.set_ticklabels(['$-\pi$', '$-\pi/2$', '0', '$-\pi/2$', '$\pi$'])
     ax.set_xlabel('RV [km/s]')
     ax.set_ylabel('bisector span [km/s]')
     fig.savefig(plot_dir + '/RV-BS.pdf')
