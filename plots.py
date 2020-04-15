@@ -16,10 +16,20 @@ except ModuleNotFoundError:
 # prevent mpl from needing an X server
 mpl.use('Agg')
 
+# style matplotlib plots
 try:
     from popsyntools import plotstyle
 except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
+
+figure = {'dpi' : 100,
+          'subplot.left'    : 0.16,   # the left side of the subplots of the figure
+          'subplot.bottom'  : 0.21,   # the bottom of the subplots of the figure
+          'subplot.right'   : 0.98,   # the right side of the subplots of the figure
+          'subplot.top'     : 0.97,   # the top of the subplots of the figure
+          'subplot.hspace'  : 0.15}    # height reserved for space between subplots
+mpl.rc('figure', **figure)
+mpl.rc('savefig', bbox = 'tight', dpi = 200)
 
 
 def plot_posteriors(julietResults, out_folder):
