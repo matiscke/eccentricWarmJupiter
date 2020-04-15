@@ -277,37 +277,40 @@ def plot_rv_fit(dataset, results):
         mu = np.median(results.posteriors['posterior_samples']['mu_' + instrument])
         # Plot original data with original errorbars:
         axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
-                     yerr=dataset.errors_rv[instrument], fmt='o', \
+                     yerr=dataset.errors_rv[instrument], fmt='o',
+                     markeredgewidth=1.5,
                      mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
-                     ms=7, label=instrument, zorder=10)
+                     ms=6, label=instrument, zorder=10)
 
         # Plot original errorbars + jitter (added in quadrature):
         axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
                      yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
-                     mec=colors[i], ecolor=colors[i], mfc='white', label=instrument, \
-                     alpha=0.5, zorder=5)
+                     mec=colors[i], ecolor=colors[i], mfc='white',
+                     alpha=0.5, zorder=8)
 
         # plot residuals
         real_model = results.rv.evaluate(instrument, t=dataset.times_rv[instrument], all_samples=True)
         axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
                         dataset.data_rv[instrument] - real_model,
                         yerr=dataset.errors_rv[instrument], fmt='o', \
+                        markeredgewidth=1.5,
                         mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
-                        ms=7, label=instrument, zorder=10)
+                        ms=6, zorder=10)
 
         # and the error bars for jitter
         axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
                         dataset.data_rv[instrument] - real_model,
                         yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
-                        mec=colors[i], ecolor=colors[i], mfc='white', label=instrument, \
-                        alpha=0.5, zorder=5)
+                        mec=colors[i], ecolor=colors[i], mfc='white',
+                        alpha=0.5, zorder=8)
 
     # Plot Keplerian model and CIs:
-    axs[0].fill_between(model_times - 2458000, up68, low68, \
+    axs[0].fill_between(model_times - 2458000, up68, low68,
                      color='cornflowerblue', alpha=0.5, zorder=5)
-    axs[0].fill_between(model_times - 2458000, up95, low95, \
+    axs[0].fill_between(model_times - 2458000, up95, low95,
                     color='cornflowerblue', alpha=0.3, zorder=6)
-    axs[0].plot(model_times - 2458000, keplerian, color='black', zorder=1)
+    axs[0].plot(model_times - 2458000, keplerian, color='black', zorder=7, lw=1,
+                label='joint model')
 
    # # plt.title('Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
    # #                                                                       results.posteriors['lnZerr']))
@@ -316,6 +319,9 @@ def plot_rv_fit(dataset, results):
     axs[1].axhline(0., ls='--', lw=2, color='gray')
     axs[1].set_xlabel('Time (BJD - 2458000)')
     axs[1].set_ylabel('Residuals [m/s]')
+    axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+                  frameon=False, columnspacing=1.6)
+    fig.align_ylabels()
     return fig, axs
 
 
