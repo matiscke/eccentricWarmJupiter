@@ -183,8 +183,8 @@ def print_prior_table(dataset):
             elif param == 'a': s_param += '$a_{' + planet_names[pl] + '}/R_*$' 
             elif param == 'r1': s_param += '$r_{1,' + planet_names[pl] + '}$'
             elif param == 'r2': s_param += '$r_{2,' + planet_names[pl] + '}$'
-            elif param == 'b': s_param += '$R_{' + planet_names[pl] + '}/R_*$'
-            elif param == 'p': s_param += '$b = (a_{' + planet_names[pl] + '}/R_*) \\cos (i_{'+ planet_names[pl] +'}) $'
+            elif param == 'p': s_param += '$R_{' + planet_names[pl] + '}/R_*$'
+            elif param == 'b': s_param += '$b = (a_{' + planet_names[pl] + '}/R_*) \\cos (i_{'+ planet_names[pl] +'}) $'
             elif param == 'ecc': s_param += '$e_{' + planet_names[pl] + '}$'
             elif param == 'omega': s_param += '$\\omega_{' + planet_names[pl] + '}$'
             elif param == 'sesinomega': 
@@ -536,7 +536,7 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
 
     if len(params_post) > 1:
         fout.write('\\noalign{\\smallskip}\n')
-        fout.write('Additional parameters\n')
+        fout.write('Additional parameters{}\n'.format(linend))
         fout.write('\\noalign{\\smallskip}\n')
 
     for post in params_post:
