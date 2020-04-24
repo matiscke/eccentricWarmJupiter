@@ -141,6 +141,7 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
     posteriors = []
     for name in julietResults.data.priors:
         if (name not in ['r1_p1','r2_p1','q1_TESSERACT+TESS','q2_TESSERACT+TESS',
+                         'sigma_w_TESSERACT+TESS',
                 'q1_CHAT+i', 'secosomega_p1', 'sesinomega_p1']) & \
                 (julietResults.data.priors[name]['distribution'] != 'fixed'):
             # consider all non-fixed params, except special parametrizations
@@ -149,6 +150,11 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
                 posteriors.append(('log '+name, np.log10(posteriorSamples[name])))
             else:
                 posteriors.append((name,posteriorSamples[name]))
+
+        if (name in ['sigma_w_TESSERACT+TESS']) & \
+                (julietResults.data.priors[name]['distribution'] != 'fixed'):
+            # dirty hack for some params that shouldn't be plotted in log
+            posteriors.append((name, posteriorSamples[name]))
 
     # include special parametrizations
     if ecc is not None:
@@ -707,7 +713,7 @@ def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
     # some eye candy
-    [ax.set_xlim([0.005, 0.3]) for ax in axs]
+    [ax.set_xlim(left=0.005) for ax in axs]
     # [ax.set_ylim([0,.9]) for ax in axs]
     [ax.tick_params(direction='in', top=True, right=True) for ax in axs]
     # fig.subplots_adjust(hspace = .03, wspace=0.4)
