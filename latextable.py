@@ -21,11 +21,11 @@ AU2m = 149600000000 # 1 AU = 149600000000m
 #ms$^{-1}$
 priors_dict = {\
 'P': {'units': 'd', 'description': 'Period'},\
-'t0': {'units': 'd', 'description': 'Time of transit centre'},\
+'t0': {'units': 'd', 'description': 'Time of transit center'},\
 'a': {'units': '??', 'description': '??'},\
 'r1': {'units': '---', 'description': 'Parametrization for p and b'},\
 'r2': {'units': '---', 'description': 'Parametrization for p and b'},\
-'b': {'units': '---', 'description': '??'},\
+'b': {'units': '---', 'description': 'Impact factor'},\
 'p': {'units': '---', 'description': 'Planet-to-star ratio'},\
 'K': {'units': 'm/s', 'description': 'Radial velocity semi-amplitude'},\
 'ecc': {'units': '---', 'description': 'Orbital eccentricity'},\
@@ -64,8 +64,8 @@ priors_dict = {\
 # GP
 'GP_Prot': {'units': '\\textcolor{red}{add}', 'description': 'Rotational period component for the GP'},\
 'GP_Gamma': {'units': '\\textcolor{red}{add}', 'description': 'Amplitude of periodic component for the GP'},\
-'GP_sigma': {'units': '\\textcolor{red}{add}', 'description': 'Amplitude for the GP'},\
-'GP_alpha': {'units': '\\textcolor{red}{add}', 'description': 'Parametrization of the lengthscale for the GP'},\
+'GP_sigma': {'units': 'm/s', 'description': 'Amplitude of the GP component'},\
+'GP_alpha': {'units': '\\textcolor{red}{add}', 'description': 'Parametrization of the lengthscale of the GP'},\
 
 
 }
@@ -202,7 +202,7 @@ def print_prior_table(dataset):
             fout.write(s_param+'\n')
             params_priors = np.delete(params_priors, np.where(params_priors == key)[0])
     
-    # Instruments 
+    # Instruments
     instruments_rv = dataset.inames_rv
     instruments_lc = dataset.inames_lc
 
@@ -221,7 +221,7 @@ def print_prior_table(dataset):
                 elif param == 'sigma_w': s_param += '$\\sigma'
                 elif param[:5] == 'theta': s_param += '$\\theta_{'+str(param[-1])+','
 
-                s_param += '\\textnormal{' + inst + '}}$  & '
+                s_param += '_{\\textnormal{' + inst + '}}$  & '
                 s_param = produce_this(s_param=s_param, dataset=dataset, param=param, key=key, params_priors=params_priors, inst=inst)
                 fout.write(s_param+'\n')
                 params_priors = np.delete(params_priors, np.where(params_priors == key)[0])
@@ -247,7 +247,7 @@ def print_prior_table(dataset):
             fout.write(s_param+'\n')
             params_priors = np.delete(params_priors, np.where(params_priors == key)[0])
 
-    instruments_lc = ['TESS']
+    # instruments_lc = ['TESSERACT+TESS']
 
     if instruments_lc is not None and len(instruments_lc) > 0:
         fout.write('\\noalign{\\smallskip}\n')
@@ -279,7 +279,7 @@ def print_prior_table(dataset):
 
     gp_names = ['sigma', 'alpha', 'Gamma', 'Prot', 'B', 'L', 'C', 'timescale', 'rho', 'S0', 'Q', 'omega0']
     gp_names_latex = ['\\sigma', '\\alpha', '\\Gamma', 'P_{rot}', \
-                    '\\textnormal{B}', '\\textnormal{L}', '\\textnormal{C}', '\\textnormal{timescale}', \
+                    '\\textnormal{B}', '\\textnormal{L}', '\\textnormal{C}', '\\tau', \
                     '\\rho', 'S_0', '\\textnormal{Q}', '\\omega 0']
 
     if len(params_priors) > 1:
@@ -303,7 +303,7 @@ def print_prior_table(dataset):
             if gp_param not in gp_names: # most likely alpha0, alpha1
                 gp_param_latex = '\\alpha_{}'.format(gp_param[-1])
 
-            s_param += '$GP_{' + gp_param_latex + ',\\textnormal{'
+            s_param += gp_param_latex + '$^{GP}_{\\textnormal{'
             for inst in insts:
                 s_param += inst+','
             s_param = s_param[:-1] # to get rid of the last comma
@@ -401,7 +401,10 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
     transiting_planets = dataset.numbering_transiting_planets
     for pl in np.unique(np.append(rv_planets, transiting_planets)):
         fout.write('\\noalign{\\smallskip}\n')
-        fout.write('Posterior parameters for planet {} '.format(planet_names[pl])+linend+' \n')
+        if len(np.unique(np.append(rv_planets, transiting_planets))) == 1:
+            fout.write('Planetary parameters'+linend+' \n')
+        else:
+            fout.write('Posterior parameters for planet {} '.format(planet_names[pl])+linend+' \n')
         fout.write('\\noalign{\\smallskip}\n')
 
         for param in order_planetary:
