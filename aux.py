@@ -4,6 +4,9 @@ Martin Schlecker, 2020
 schlecker@mpia.de
 """
 import numpy as np
+from astropy import units as u
+from astropy import constants as c
+
 try:
     from astropy.timeseries import LombScargle
 except ModuleNotFoundError:
@@ -154,3 +157,29 @@ def get_GLS(t, rv, rv_error):
     peakPower = power[i_peak]
     FAP = ls.false_alarm_probability(peakPower, method='bootstrap')
     return peakFrequency, peakPower, FAP, ls
+
+
+def get_Tcirc(a, Mstar, Rp, Mp, e=0, Qp=1e6):
+    """ estimate orbit circularization timescale.
+
+    Parameters
+    -----------
+    a : float
+        sma in au
+    Mstar : float
+        stellar mass in Msol
+    Rp : float
+        planetary radius in Rjup
+    Mp : float
+        planetary mass in Mjup
+    e : float
+        eccentricity
+
+
+    Equation 2 in Adams FC, Laughlin G (2006),
+    Long‐Term Evolution of Close Planets Including the Effects of Secular Interactions.
+    Astrophys J 649:1004–1009. https://doi.org/10.1086/506145
+    """
+    F = lambda e: 1 + 6*e**2
+    tau = 4/63*Qp*np.sqrt((a*c.au)**3/(c.G*Mstar*c.M_sun))*Mp*c.M_jup/(Mstar*c.M_sun)*(a*c.au/(Rp*c.R_jup))**5*(1-e**2)**(13/2)/F(e)
+    return tau.to(u.yr)
