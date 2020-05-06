@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import juliet
 import plots
+import latextable
 import pickle
 
 try:
@@ -25,8 +26,20 @@ datafolder = 'data/'
 # out_folder = 'out/29_feros'
 # out_folder = 'out/30_feros_noPlanet'
 # out_folder = 'out/32b_feros_lognormalPprior'
-# out_folder = 'out/33_feros_uniformPprior'
-out_folder = 'out/34_feros_noPlanet'
+# out_folder = 'out/33d_feros_uniformPprior'
+# out_folder = 'out/34_feros_noPlanet'
+# out_folder = 'out/35_feros_uniformPprior_circular'
+# out_folder = 'out/36_feros_uniformPprior_2p_circular'
+# out_folder = 'out/37_feros_uniformPprior_2p_1ecc2circular'
+# out_folder = 'out/38b_feros_uniformPprior_2p_2ecc'
+
+## new joint fits
+out_folder = 'out/39_tess+chat+feros+GP'
+# out_folder = 'out/39b_tess+chat+feros+GP'
+# out_folder = 'out/39c_tess+chat+feros+GP'
+# out_folder = 'out/40_tess+chat+feros+GP+linearTrend'
+
+
 
 # constrain Rp/Rs
 pl=0.0
@@ -40,7 +53,7 @@ else:
 
 instruments_lc = []
 # instruments_lc = ['TESSERACT+TESS']
-# instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
+instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
 outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602]
 instruments_rv = ['FEROS']
 # instruments_rv = ['FEROS', 'CORALIE']
@@ -52,6 +65,8 @@ Mstar_err = .06
 Rstar = 1.088 # solar raddi
 Rstar_err = .012
 Teff = 5788
+Lstar = 1.196
+
 
 solarrad2m = 6.957e8 # solar radii in meters
 
@@ -60,54 +75,64 @@ def get_priors(GP=True):
     params = {
     # planet 1
 
-    # 'P_p1' : ['normal', [15.16, 0.2]],
+    'P_p1' : ['normal', [15.16, 0.2]],
     # 'P_p1' : ['uniform', [1, 30]],
     # 'P_p1' : ['loguniform', [.1, 30]],
-    'P_p1' : ['fixed', 1.],
+    # 'P_p1' : ['fixed', 1.],
+    # 'P_p2' : ['uniform', [1, 30]],
 
-    # 't0_p1' : ['normal', [2458319.17, 0.2]],
+    't0_p1' : ['normal', [2458319.17, 0.2]],
     # 't0_p1' : ['uniform', [2458325.32623291, 2458449.32623291]],
     # 't0_p1' : ['uniform', [2458670.0, 2458700.0]],
-    't0_p1' : ['fixed', 1.],
+    # 't0_p1' : ['fixed', 1.],
+    # 't0_p2' : ['uniform', [2458325.32623291, 2458449.32623291]],
 
 
     # 'r1_p1' : ['uniform', [0.,1.]],
     # 'r2_p1' : ['uniform', [0.,1.]],
-    # 'p_p1' : ['uniform', [0., .5]],
-    # 'b_p1' : ['uniform', [0., 1.5]],
+    'p_p1' : ['uniform', [0., .5]],
+    'b_p1' : ['uniform', [0., 1.5]],
 
-    # 'sesinomega_p1' : ['uniform', [-1, 1]],
-    'sesinomega_p1' : ['fixed', 0.],
-    # 'secosomega_p1' : ['uniform', [-1, 1]],
-    'secosomega_p1' : ['fixed', 0.],
+    'sesinomega_p1' : ['uniform', [-1, 1]],
+    # 'sesinomega_p1' : ['fixed', 0.],
+    'secosomega_p1' : ['uniform', [-1, 1]],
+    # 'secosomega_p1' : ['fixed', 0.],
+    # 'sesinomega_p2' : ['uniform', [-1, 1]],
+    # 'secosomega_p2' : ['uniform', [-1, 1]],
+    # 'ecc_p1' : ['fixed', 0.], # fix to circular orbit
+    # 'omega_p1' : ['fixed', 90.], # fix to circular orbit
+    # 'ecc_p2' : ['fixed', 0.], # fix to circular orbit
+    # 'omega_p2' : ['fixed', 90.], # fix to circular orbit
 
     # Star
-    # 'rho' : ['normal', [1120,110]],
+    'rho' : ['normal', [1120,110]],
 
     # TESS
-    # 'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
-    # 'q2_TESSERACT+TESS' : ['uniform', [0., 1.]],
-    # 'sigma_w_TESSERACT+TESS' : ['loguniform', [1e-5,1e5]],
-    # 'mflux_TESSERACT+TESS' : ['normal', [0.0,0.1]],
-    # 'mdilution_TESSERACT+TESS' : ['fixed', 1.0],
-    # 'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
-    # 'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
+    'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
+    'q2_TESSERACT+TESS' : ['uniform', [0., 1.]],
+    'sigma_w_TESSERACT+TESS' : ['loguniform', [1e-5,1e5]],
+    'mflux_TESSERACT+TESS' : ['normal', [0.0,0.1]],
+    'mdilution_TESSERACT+TESS' : ['fixed', 1.0],
+    'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
+    'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
 
     # CHAT+i
-    # 'q1_CHAT+i' : ['uniform', [0., 1.]],
-    # ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
-    # 'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
-    # 'mflux_CHAT+i' : ['normal', [0.0,0.1]],
-    # 'mdilution_CHAT+i' : ['fixed', 1.0],
+    'q1_CHAT+i' : ['uniform', [0., 1.]],
+    ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
+    'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
+    'mflux_CHAT+i' : ['normal', [0.0,0.1]],
+    'mdilution_CHAT+i' : ['fixed', 1.0],
 
     # RV planetary
-    # 'K_p1' : ['uniform', [0., 1000.]],
-    'K_p1' : ['fixed', 0.], # no-planet-case
+    'K_p1' : ['uniform', [140., 260.]], # prior based on RV-only fit (fit No 33)
+    # 'K_p1' : ['fixed', 0.], # no-planet-case
+    # 'K_p2' : ['uniform', [0., 1000.]],
 
 
     # RV FEROS
-    'mu_FEROS' : ['uniform', [-1000, 1000]],
-    'sigma_w_FEROS' : ['loguniform', [0.01, 1e3]],
+    'mu_FEROS' : ['uniform', [-30, 30]], # prior based on RV-only fit (fit No 33)
+    # 'sigma_w_FEROS' : ['loguniform', [0.01, 1e3]],
+    'sigma_w_FEROS' : ['loguniform', [1., 1e2]], # prior based on RV-only fit (fit No 33)
 
     # RV CORALIE
     # 'mu_CORALIE' : ['uniform', [-1000, 1000]],
@@ -285,8 +310,24 @@ def showResults(datafolder, out_folder, **fitKwargs):
     print(lnZstr)
     return results
 
-if __name__ == "__main__":
-    results = main(datafolder, out_folder, GP)
-    pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
 
-    results = showResults(datafolder, out_folder, pl=pl, pu=pu)
+def printTables(out_folder):
+    """ print Latex-formatted tables for priors, posteriors to files"""
+    dataset = juliet.load(input_folder=out_folder)
+    try:
+        results = pickle.load(open(out_folder + '/results.pkl', 'rb'))
+    except FileNotFoundError:
+        results = dataset.fit(use_dynesty=False, dynamic=True,
+                          **fitKwargs) # has to be ~same call as during fit
+    # latextable.print_prior_table(dataset)
+    latextable.print_posterior_table(dataset, results, precision=2)
+
+
+if __name__ == "__main__":
+    # results = main(datafolder, out_folder, GP)
+    # pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
+
+    # results = showResults(datafolder, out_folder, pl=pl, pu=pu)
+    pass
+
+printTables(out_folder)
