@@ -176,8 +176,8 @@ def print_prior_table(dataset):
 
         for param in order_planetary:
             key = '{}_p{}'.format(param, pl)
-            if key not in params_priors: continue
-
+            if key not in params_priors:
+                continue
             s_param = '~~~'
             if param == 't0': s_param += '$t_{0,' + planet_names[pl] + '}$' 
             elif param == 'a': s_param += '$a_{' + planet_names[pl] + '}/R_*$' 
@@ -259,7 +259,7 @@ def print_prior_table(dataset):
                 if key not in params_priors: continue
                 s_param = '~~~'
 
-                print(param)
+                print('lc param "{}"'.format(param))
                 if param == 'mdilution': s_param += '$D_{'
                 elif param == 'mflux': s_param += '$M_{'
                 elif param == 'sigma_w': s_param += '$\\sigma_{'
@@ -371,14 +371,34 @@ def print_prior_table(dataset):
         fout.write(elem+'\n')
     fout.close()
     return
-    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
     # lin = 'parameter \t& ${}^{+{}}_{-{}}$ \\\\'.format(precision, precision, precision)
     # print(lin)
 
     out_folder = dataset.out_folder
 
-    latex_fil = out_folder+'/posterior_table.tex'
+    latex_fil = out_folder+'posterior_table.tex'
+    print('writing to {}.'.format(latex_fil))
     fout = open(latex_fil, 'w')
     tab_start = ['\\begin{table*}', '\\centering', '\\caption{Posterior parameters}', '\\label{tab:posteriors}', '\\begin{tabular}{lc}',\
                 '\\hline', '\\hline', '\\noalign{\\smallskip}', 'Parameter name & Posterior estimate \\\\',\
@@ -390,7 +410,27 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
     linend = '\\\\[0.1 cm]'
     params_post = np.array([i for i in results.posteriors['posterior_samples'].keys()]) # transform it to array
 
-    order_planetary = ['P', 't0', 'r1', 'r2', 'K', 'ecc']
+    ## Stellar parameters first
+    if 'rho' in params_post:
+        fout.write('\\noalign{\\smallskip}\n')
+        fout.write('Stellar Parameters '+linend+' \n')
+        fout.write('\\noalign{\\smallskip}\n')
+        s_param = '~~~'
+        s_param += '$\\rho_{*} \, \mathrm{(kg/m^3)}$'
+        s_param += '  & '
+
+        val,valup,valdown = juliet.utils.get_quantiles(results.posteriors['posterior_samples']['rho'])
+        errhi, errlo = round_sig(valup-val, sig=precision), round_sig(val-valdown, sig=precision)
+        digits = np.max([np.abs(count_this(errhi)), np.abs(count_this(errlo))])
+        vals = '{0:.{digits}f}'.format(val, digits = digits)
+        errhis = '{0:.{digits}f}'.format(errhi, digits = digits)
+        errlos = '{0:.{digits}f}'.format(errlo, digits = digits)
+        s_param += '$'+vals+'^{+'+errhis+'}_{-'+errlos+'}$' + linend
+        fout.write(s_param+'\n')
+        params_post = np.delete(params_post, np.where(params_post == 'rho')[0])
+
+    order_planetary = ['P', 't0', 'a', 'r1', 'r2', 'b', 'p', 'K', 'ecc', 'omega', 'sesinomega', 'secosomega',
+                       'esinomega', 'ecosomega']
     planet_names = ['', 'b', 'c', 'd', 'e', 'f']
     # Save information stored in the prior: the dictionary, number of transiting planets, 
     # number of RV planets, numbering of transiting and rv planets (e.g., if p1 and p3 transit 
@@ -410,19 +450,27 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
         for param in order_planetary:
             key = '{}_p{}'.format(param, pl)
 
-            if key not in params_post and key not in dataset.priors.keys(): continue
+            if key not in params_post and key not in dataset.priors.keys():
+                continue
             val,valup,valdown = juliet.utils.get_quantiles(results.posteriors['posterior_samples'][key])
             s_param = '~~~'
-            if param == 't0':
-                s_param += '$t_{0,' + planet_names[pl] + '}$'
-            elif param == 'r1':
-                s_param += '$r_{1,' + planet_names[pl] + '}$'
-            elif param == 'r2':
-                s_param += '$r_{2,' + planet_names[pl] + '}$'
-            elif param == 'ecc':
-                s_param += '$e_{' + planet_names[pl] + '}$'
-            else:
-                s_param += '$' + param + '_{' + planet_names[pl] + '}$'
+            if param == 't0': s_param += '$t_{0,' + planet_names[pl] + '}$'
+            elif param == 'a': s_param += '$a_{' + planet_names[pl] + '}/R_*$'
+            elif param == 'r1': s_param += '$r_{1,' + planet_names[pl] + '}$'
+            elif param == 'r2': s_param += '$r_{2,' + planet_names[pl] + '}$'
+            elif param == 'p': s_param += '$R_{' + planet_names[pl] + '}/R_*$'
+            elif param == 'b': s_param += '$b = (a_{' + planet_names[pl] + '}/R_*) \\cos (i_{'+ planet_names[pl] +'}) $'
+            elif param == 'ecc': s_param += '$e_{' + planet_names[pl] + '}$'
+            elif param == 'omega': s_param += '$\\omega_{' + planet_names[pl] + '}$'
+            elif 'sesinomega' in param:
+                s_param += '$S_{1,' + planet_names[pl] + '} = \\sqrt{e_'+planet_names[pl]+'}\\sin \\omega_'+planet_names[pl]+'$'
+            elif param == 'secosomega':
+                s_param += '$S_{2,' + planet_names[pl] + '} = \\sqrt{e_'+planet_names[pl]+'}\\cos \\omega_'+planet_names[pl]+'$'
+            elif param == 'esinomega':
+                s_param += '$S_{1,' + planet_names[pl] + '} = e_'+planet_names[pl]+'\\sin \\omega_'+planet_names[pl]+'$'
+            elif param == 'ecosomega':
+                s_param += '$S_{1,' + planet_names[pl] + '} = e_'+planet_names[pl]+'\\cos \\omega_'+planet_names[pl]+'$'
+            else: s_param += '$' + param + '_{' + planet_names[pl] + '}$'
             s_param += '  & '
 
             errhi, errlo = round_sig(valup-val, sig=precision), round_sig(val-valdown, sig=precision)
@@ -531,7 +579,7 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
 
     gp_names = ['sigma', 'alpha', 'Gamma', 'Prot', 'B', 'L', 'C', 'timescale', 'rho', 'S0', 'Q', 'omega0']
     gp_names_latex = ['\\sigma', '\\alpha', '\\Gamma', 'P_{rot}', \
-                    '\\textnormal{B}', '\\textnormal{L}', '\\textnormal{C}', '\\textnormal{timescale}', \
+                    '\\textnormal{B}', '\\textnormal{L}', '\\textnormal{C}', '\\tau', \
                     '\\rho', 'S_0', '\\textnormal{Q}', '\\omega 0']
 
     if len(params_post) > 1:
@@ -558,10 +606,10 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
             if gp_param not in gp_names: # most likely alpha0, alpha1
                 gp_param_latex = '\\alpha_{}'.format(gp_param[-1])
 
-            s_param += '$GP_{' + gp_param_latex + ',\\textnormal{'
+            s_param += gp_param_latex + '$^{GP}_{\\textnormal{'
             for inst in insts:
-                s_param += inst+','
-            s_param = s_param[:-1] # to get rid of the last comma
+                s_param += inst + ','
+            s_param = s_param[:-1]  # to get rid of the last comma
             s_param += '}}$'
         else:
             s_param += '$' + post + '$'
