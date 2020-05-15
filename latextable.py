@@ -179,7 +179,8 @@ def print_prior_table(dataset):
             if key not in params_priors:
                 continue
             s_param = '~~~'
-            if param == 't0': s_param += '$t_{0,' + planet_names[pl] + '}$' 
+            if param == 'P': s_param += '$P_{' + planet_names[pl] + '}$'
+            elif param == 't0': s_param += '$t_{0,' + planet_names[pl] + '}$'
             elif param == 'a': s_param += '$a_{' + planet_names[pl] + '}/R_*$' 
             elif param == 'r1': s_param += '$r_{1,' + planet_names[pl] + '}$'
             elif param == 'r2': s_param += '$r_{2,' + planet_names[pl] + '}$'
@@ -290,6 +291,7 @@ def print_prior_table(dataset):
     for post in params_priors:
         s_param = '~~~'
         if post == 'unnamed': continue
+        if post == 'loglike': continue
         elif post[:2] == 'GP':
             pvector = post.split('_')
             gp_param = pvector[1]
@@ -454,12 +456,14 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
                 continue
             val,valup,valdown = juliet.utils.get_quantiles(results.posteriors['posterior_samples'][key])
             s_param = '~~~'
-            if param == 't0': s_param += '$t_{0,' + planet_names[pl] + '}$'
+            if param == 'P': s_param += '$P_{' + planet_names[pl] + '}$ (d)'
+            elif param == 't0': s_param += '$t_{0,' + planet_names[pl] + '}$ (BJD UTC)'
             elif param == 'a': s_param += '$a_{' + planet_names[pl] + '}/R_*$'
             elif param == 'r1': s_param += '$r_{1,' + planet_names[pl] + '}$'
             elif param == 'r2': s_param += '$r_{2,' + planet_names[pl] + '}$'
             elif param == 'p': s_param += '$R_{' + planet_names[pl] + '}/R_*$'
             elif param == 'b': s_param += '$b = (a_{' + planet_names[pl] + '}/R_*) \\cos (i_{'+ planet_names[pl] +'}) $'
+            elif param == 'K': s_param += '$K_{' + planet_names[pl] + '}$ (m/s)'
             elif param == 'ecc': s_param += '$e_{' + planet_names[pl] + '}$'
             elif param == 'omega': s_param += '$\\omega_{' + planet_names[pl] + '}$'
             elif 'sesinomega' in param:
@@ -500,11 +504,11 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
             for param,param_latex in zip(orderinst_rv,orderinst_rv_latex):
                 s_param = '~~~'
 
-                s_param += '$'+param_latex+'_{\\textnormal{'+inst+'}}$ (ms$^{-1}$)'
+                s_param += '$'+param_latex+'_{\\textnormal{'+inst+'}}$ (m/s)'
                 # if param == 'mu':
-                #     s_param += '$\\mu_{\\textnormal{' + inst + '}}$ (ms$^{-1}$)'
+                #     s_param += '$\\mu_{\\textnormal{' + inst + '}}$ (m/s)'
                 # elif param == 'sigma_w':
-                #     s_param += '$\\sigma_{\\textnormal{' + inst + '}}$ (ms$^{-1}$)'
+                #     s_param += '$\\sigma_{\\textnormal{' + inst + '}}$ (m/s)'
 
                 s_param += '  & '
                 if '{}_{}'.format(param, inst) not in params_post:  # assume it was fixed
@@ -590,6 +594,7 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
     for post in params_post:
         s_param = '~~~'
         if post == 'unnamed': continue
+        if post == 'loglike': continue
 
         elif post == 'rho':
             s_param += '$\\rho_{*}$'
