@@ -5,6 +5,7 @@ import numpy as np
 import juliet
 from math import log10, floor
 import decimal
+import aux
 
 # https://exoplanetarchive.ipac.caltech.edu/docs/poet_calculations.html
 
@@ -393,7 +394,17 @@ def print_prior_table(dataset):
 
 
 
-def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
+def print_posterior_table(dataset, results, precision=2, printDerived=True, rvunits='ms'):
+    """
+
+    Parameters
+    ----------
+    dataset
+    results
+    precision
+    printDerived
+    rvunits
+    """
     # lin = 'parameter \t& ${}^{+{}}_{-{}}$ \\\\'.format(precision, precision, precision)
     # print(lin)
 
@@ -586,10 +597,10 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
                     '\\textnormal{B}', '\\textnormal{L}', '\\textnormal{C}', '\\tau', \
                     '\\rho', 'S_0', '\\textnormal{Q}', '\\omega 0']
 
-    if len(params_post) > 1:
-        fout.write('\\noalign{\\smallskip}\n')
-        fout.write('Additional parameters{}\n'.format(linend))
-        fout.write('\\noalign{\\smallskip}\n')
+    # if len(params_post) > 1:
+    #     fout.write('\\noalign{\\smallskip}\n')
+    #     fout.write('Additional parameters{}\n'.format(linend))
+    #     fout.write('\\noalign{\\smallskip}\n')
 
     for post in params_post:
         s_param = '~~~'
@@ -611,7 +622,7 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
             if gp_param not in gp_names: # most likely alpha0, alpha1
                 gp_param_latex = '\\alpha_{}'.format(gp_param[-1])
 
-            s_param += gp_param_latex + '$^{GP}_{\\textnormal{'
+            s_param += '$' + gp_param_latex + '^{GP}_{\\textnormal{'
             for inst in insts:
                 s_param += inst + ','
             s_param = s_param[:-1]  # to get rid of the last comma
@@ -636,7 +647,40 @@ def print_posterior_table(dataset, results, precision=2, rvunits='ms'):
 
     if len(params_post) > 1:
         print('% These params were not able to be latexifyed')
-        print('%',params_post) 
+        print('%',params_post)
+
+    if printDerived:
+        # print derived parameters
+        fout.write('\\noalign{\\smallskip}\n')
+        fout.write('Derived parameters{}\n'.format(linend))
+        fout.write('\\noalign{\\smallskip}\n')
+
+        derivedParams = ['incl_p1', 'radius_rj_p1', 'mass_mj_p1', 'semimajor_au_p1',
+                         'rho_kgm3_p1']
+        for param in derivedParams:
+            try:
+                s_param = '~~~'
+                s_param += aux.format(param)
+                s_param += ' & '
+                val, valup, valdown = juliet.utils.get_quantiles(
+                    results.posteriors['posterior_samples'][param])
+                errhi, errlo = round_sig(valup - val, sig=precision), round_sig(val - valdown, sig=precision)
+                digits = np.max([np.abs(count_this(errhi)), np.abs(count_this(errlo))])
+                vals = '{0:.{digits}f}'.format(val, digits=digits)
+                errhis = '{0:.{digits}f}'.format(errhi, digits=digits)
+                errlos = '{0:.{digits}f}'.format(errlo, digits=digits)
+                s_param += '$' + vals + '^{+' + errhis + '}_{-' + errlos + '}$' + linend
+                fout.write(s_param + '\n')
+            except KeyError:
+                continue
+
+        # add placeholder
+        s_param = '~~~$T_\mathrm{eq}\, \mathrm{[K]}$  & XXX ADD VALUE \\\ '
+        fout.write(s_param + '\n')
+
+        # fout.write('\\noalign{\\medskip}\n')
+
+    # compose table footer
     tab_end = ['\\noalign{\\smallskip}', '\\hline', '\\hline', '\\end{tabular}', '\\end{table*}']
     for elem in tab_end:
         fout.write(elem+'\n')

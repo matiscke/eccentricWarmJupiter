@@ -61,6 +61,11 @@ def get_planetaryparams(dataset, results, mass_star=None, radius_star=None, teff
     :param emissivity: (dict)
         Defines the emissivity of each planet, where emissivity={'1': 1.0, '2':0.9, ...}
         If not provided, then all emissivitivites for the planets are set to 1.0.
+
+    Returns
+    -------
+    results: juliet results object
+        updated results object with derived parameters
     """
     transiting_planets = dataset.numbering_transiting_planets # array of planet indexes that transit
     rv_planets = dataset.numbering_rv_planets # array of planet indexes that have RVs
@@ -281,6 +286,7 @@ def get_planetaryparams(dataset, results, mass_star=None, radius_star=None, teff
                 results.posteriors['posterior_samples']['insolation_p{}'.format(i_rv)] = get_insolation(l_s=l_star, \
                                                                                         a_au=results.posteriors['posterior_samples']['semimajor_au_p{}'.format(i_rv)])
 
+    return results
 
 def get_inclination(aR, b, e=0, omega=90):
     # applicable for transits only
