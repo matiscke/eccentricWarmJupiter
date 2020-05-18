@@ -61,7 +61,12 @@ def format(paramName):
     'sigma_w_FEROS' :'$\sigma_\mathrm{FEROS}\, [\mathrm{m/s}]$',
     'rv_intercept' :'$b_\mathrm{RV}\, [\mathrm{m/s}]$',
     'rv_slope' : '$m_\mathrm{RV}\, [\mathrm{m/s}]$',
-    'rv_quad' : '$q_\mathrm{RV}\, [\mathrm{m/s}]$'
+    'rv_quad' : '$q_\mathrm{RV}\, [\mathrm{m/s}]$',
+    'incl_p1' : 'i [deg]',
+    'radius_rj_p1' : '$R_\mathrm{P} \, [\mathrm{R_{Jup}}]$',
+    'mass_mj_p1' : '$M_\mathrm{P} \, [\mathrm{M_{Jup}}]$',
+    'semimajor_au_p1' : '$a \, [\mathrm{au}]$',
+    'rho_kgm3_p1' : r'$\rho_\mathrm{P} \, [\mathrm{kg \, m^{-3}}]$'
     }
     try:
         label = labels[paramName]
