@@ -77,10 +77,36 @@ def format(paramName):
         label = 'log ' + label
     return label
 
+
+def label(originalLabel):
+    """reformat some instrument labels for legends and stuff"""
+    labels = {
+        'TESSERACT+TESS' : 'TESS',
+        'CHAT+i' : 'CHAT'
+    }
+
+    try:
+        label = labels[originalLabel]
+    except KeyError:
+        label = originalLabel
+
+    return label
+
+def photPlotParams():
+    """ return a dictionary with preferred matplotlib parameters for photometry plots."""
+    return {
+        'alpha' : 0.66,
+        'fmt' : '.',
+        'elinewidth' : .5,
+        'ms' : 1.,
+        'color' : 'black'
+    }
+
 def r_of_theta(theta, a, e=0.):
     """ compute orbital distance from true anomaly for an eccentric orbit."""
     r = a*(1-e**2)/(1+e*np.cos(theta))
     return r
+
 
 def Teq(L, a, albedo=0., emissivity=1., beta=1.):
     """ compute the instantaneous equilibrium temperature of a planet at orbital

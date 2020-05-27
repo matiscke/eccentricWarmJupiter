@@ -27,7 +27,8 @@ figure = {'dpi' : 100,
           'subplot.bottom'  : 0.21,   # the bottom of the subplots of the figure
           'subplot.right'   : 0.98,   # the right side of the subplots of the figure
           'subplot.top'     : 0.97,   # the top of the subplots of the figure
-          'subplot.hspace'  : 0.15}    # height reserved for space between subplots
+          'subplot.hspace'  : 0.15,    # height reserved for space between subplots
+          'figsize' : [4.3, 3.2]}
 mpl.rc('figure', **figure)
 mpl.rc('savefig', bbox = 'tight', dpi = 200)
 
@@ -218,22 +219,22 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
                                                                      return_err=True, alpha=.9545)
 
     if axs is None:
-        fig, axs = plt.subplots(2, sharex=True, gridspec_kw={'height_ratios': [5, 2]})
+        fig, axs = plt.subplots(2, sharex=True, gridspec_kw={'height_ratios': [5, 2]},
+                                figsize = [8.6, 3.2])
     axs[0].errorbar(dataset.times_lc[instrument]- 2458000, dataset.data_lc[instrument],
-                 yerr=dataset.errors_lc[instrument], fmt = '.', alpha=.66,
-                 elinewidth = .5, ms = 1, color='black', label = 'TESS')
+                 yerr=dataset.errors_lc[instrument], **aux.photPlotParams(), label = aux.label(instrument))
     axs[0].plot(dataset.times_lc[instrument]- 2458000, transit_model,
-                lw=0.5, label='Full model')
+                lw=0.5, label='model')
     axs[0].fill_between(dataset.times_lc[instrument]- 2458000, transit_up68, transit_low68,
-                    color='cornflowerblue', alpha=0.5, zorder=5)
-    # axs[0].fill_between(dataset.times_lc[instrument]- 2458000, transit_up95, transit_low95,
-    #                 color='cornflowerblue', alpha=0.3, zorder=6)
+                    color='cornflowerblue', alpha=0.6, zorder=5)
+    axs[0].fill_between(dataset.times_lc[instrument]- 2458000, transit_up95, transit_low95,
+                    color='cornflowerblue', alpha=0.2, zorder=5)
 
     # Now the residuals:
     axs[1].errorbar(dataset.times_lc[instrument] - 2458000,
                     (dataset.data_lc[instrument] - transit_model) * 1e6,
-                 dataset.errors_lc[instrument] * 1e6, fmt='.', alpha=0.66, elinewidth=.5,
-                 ms=1, color='black', label='residuals')
+                 dataset.errors_lc[instrument] * 1e6, **aux.photPlotParams(), label='residuals')
+    axs[1].axhline(0, ls='--', lw=1, color='k', alpha=0.5)
 
     axs[1].set_ylabel('Residuals (ppm)')
     axs[1].set_xlabel('Time (BJD - 2458000)')
@@ -243,7 +244,8 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
     # plt.xlim([1326,1332])
     # plt.ylim([0.999,1.001])
     axs[1].set_xlabel('Time (BJD - 2458000)')
-    [ax.set_ylabel('Relative flux') for ax in axs]
+    axs[0].set_ylabel('Relative flux')
+    axs[1].set_ylabel('Residuals (ppm)')
     return fig, axs
 
 
@@ -286,7 +288,7 @@ def plot_rv_fit(dataset, results):
                      yerr=dataset.errors_rv[instrument], fmt='o',
                      markeredgewidth=1.5,
                      mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
-                     ms=6, label=instrument, zorder=10)
+                     ms=6, label=aux.label(instrument), zorder=10)
 
         # Plot original errorbars + jitter (added in quadrature):
         axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
@@ -344,7 +346,7 @@ def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
     return fig, ax
 
 
-def plot_phasedPhotometry(dataset, results, instrument=None):
+def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
     """ plot phased photometry and best fit from transit model.
 
     Parameters
@@ -382,102 +384,109 @@ def plot_phasedPhotometry(dataset, results, instrument=None):
 
     plots = {}
 
+    times_lc = results.data.times_lc
+    data_lc = results.data.data_lc
+    errors_lc = results.data.errors_lc
+
+    numbering_planets_transit = results.data.numbering_transiting_planets
+    instruments_lc = results.data.inames_lc
     for inst in instruments:
-        fig, axs = plt.subplots(2, sharex=True, gridspec_kw={'height_ratios': [5, 2]})
 
-        # # Plot:
-        # fig, (ax1, ax2) = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [5, 2]}, facecolor='w',
-        #                                figsize=(10, 4))
-        #
-        # # gs = gridspec.GridSpec(2, 1, height_ratios=[2,1])
-        # nsamples = 1000
-        #
-        # fil = dataset.out_folder + '/lc_model_{}.pkl'.format(inst)
-        # if os.path.isfile(fil):
-        #     model = pickle.load(open(fil, 'rb'))
-        #     lc_model, lc_up68, lc_low68, components = model['lc_model'], model['lc_up68'], model['lc_low68'], model[
-        #         'components']
-        # else:
-        #     model = {}
-        #
-        #     model['lc_model'], model['lc_up68'], model['lc_low68'], model[
-        #         'components'] = lc_model, lc_up68, lc_low68, components = results.lc.evaluate(inst, \
-        #                                                                                       parameter_values=
-        #                                                                                       posteriors[
-        #                                                                                           'posterior_samples'], \
-        #                                                                                       t=dataset.times_lc[
-        #                                                                                           inst], \
-        #                                                                                       nsamples=nsamples, \
-        #                                                                                       return_err=True, \
-        #                                                                                       return_components=True, \
-        #                                                                                       GPregressors=
-        #                                                                                       dataset.times_lc[
-        #                                                                                           inst])
-        #     model['nsamples'] = nsamples
-        #
-        #     pickle.dump(model, open(fil, 'wb'))
+        try:
+            _ = results.lc.evaluate(inst, t = times_lc[inst], \
+                )
+            gp_data_model = np.zeros(len(times_lc[inst]))
+        except:
+            _ = results.lc.evaluate(inst, t = times_lc[inst], \
+                GPregressors=times_lc[inst],\
+                )
+            gp_data_model = results.lc.model[inst]['GP']
+        det_data_model = results.lc.model[inst]['deterministic']
 
-
-
-        for i_transit in dataset.numbering_transiting_planets:
-            # transit_model = results.lc.model[inst]['deterministic']
+        for i_transit in numbering_planets_transit:
             try:
-                gp_model = results.lc.model[inst]['GP']
-            except:
-                gp_model = np.zeros(len(dataset.data_lc[inst]))
-            try:
-                P = results.posteriors['posterior_samples']['P_p{}'.format(i_transit)]
+                P = np.median(results.posteriors['posterior_samples']['P_p{}'.format(i_transit)])
             except KeyError:
-                P = dataset.priors['P_p{}'.format(i_transit)]['hyperparameters']
+                P = results.data.priors['P_p{}'.format(i_transit)]['hyperparameters']
             try:
-                t0 = results.posteriors['posterior_samples']['t0_p{}'.format(i_transit)]
+                t0 = np.median(results.posteriors['posterior_samples']['t0_p{}'.format(i_transit)])
             except KeyError:
-                t0 = dataset.priors['t0_p{}'.format(i_transit)]['hyperparameters']
+                t0 = results.data.priors['t0_p{}'.format(i_transit)]['hyperparameters']
 
-            phases_lc = juliet.utils.get_phases(dataset.times_lc[inst], P, t0)
-            idx = np.argsort(phases_lc)
+            fig,axs = plt.subplots(2,1,sharex=True, gridspec_kw = {'height_ratios':[5,2]})
+            phases_lc = juliet.utils.get_phases(times_lc[inst], P, t0)
 
+            model_phases = np.linspace(-0.04,0.04,1000)
+            model_times = model_phases*P + t0
 
-            # # define denser time array (didn't work, Diana is on it)
-            # t_eva = np.linspace(min(dataset.times_lc[inst]),
-            #                     max(dataset.times_lc[inst]), num=500)
-
-
-
-            c_model, c_components = results.lc.evaluate(inst, t=dataset.times_lc[inst], \
-                                                        # all_samples=True, \
-                                                        return_components=True, \
-                                                        GPregressors=dataset.times_lc[inst])
-
-
-            axs[0].errorbar(phases_lc,
-                             dataset.data_lc[inst] - (c_model - c_components['p{}'.format(i_transit)]) - gp_model, \
-                             yerr=dataset.errors_lc[inst], fmt='.', \
-                             alpha=0.1)
-
-            # Plot transit-only (divided by mflux) model:
-            axs[0].plot(phases_lc[idx], c_components['p{}'.format(i_transit)][idx] - c_components['lm'][idx],
-                     color='black', zorder=10)
-            axs[1].axhline(y=0, ls='--', color='k', alpha=0.5)
-            # axs[0].yaxis.set_major_formatter(plt.NullFormatter())
             try:
-                axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(P, t0))
+                model_lc, transit_up68, transit_low68, model_components = results.lc.evaluate(inst, t = model_times, \
+                                        return_components = True,\
+                                        return_err=True, alpha=0.68)
+                _, transit_up95, transit_low95, _ = results.lc.evaluate(inst, t = model_times, \
+                                        return_components = True,\
+                                        return_err=True, alpha=0.95)
+                _, transit_up99, transit_low99, _ = results.lc.evaluate(inst, t = model_times, \
+                                        return_components = True,\
+                                        return_err=True, alpha=0.99)
             except:
-                axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(np.median(P), np.median(t0)))
+                model_lc, transit_up68, transit_low68, model_components = results.lc.evaluate(inst, t = model_times, \
+                                        return_components = True,\
+                                        GPregressors=model_times, \
+                                        return_err=True, alpha=0.68)
+                _, transit_up95, transit_low95, _ = results.lc.evaluate(inst, t = model_times, \
+                                        return_components = True,\
+                                        GPregressors=model_times, \
+                                        return_err=True, alpha=0.95)
+                _, transit_up99, transit_low99, _ = results.lc.evaluate(inst, t = model_times, \
+                                        return_components = True,\
+                                        GPregressors=model_times, \
+                                        return_err=True, alpha=0.99)
 
-            axs[0].set_ylabel('Relative flux')
-            axs[0].set_xlim([-0.015, 0.015])  ### CHANGE THIS
-            # axs[0].set_ylim([0.9985,1.0015]) ### CHANGE THIS
+            axs[0].errorbar(phases_lc, data_lc[inst] - gp_data_model, \
+                 yerr = errors_lc[inst], **aux.photPlotParams(), label=aux.label(inst),
+                            zorder=6)
+            axs[0].plot(model_phases, model_lc, lw=.5, color='black', zorder=7)
+
+            axs[0].fill_between(model_phases,transit_up68,transit_low68,\
+                     color='cornflowerblue', alpha=0.6,zorder=5, label='model')
+            axs[0].fill_between(model_phases,transit_up95,transit_low95,\
+                     color='cornflowerblue',alpha=0.2,zorder=5)
+            # axs[0].fill_between(model_phases,transit_up99,transit_low99,\
+            #          color='cornflowerblue',alpha=0.2,zorder=5)
+
+            axs[1].errorbar(phases_lc, (data_lc[inst]-det_data_model-gp_data_model)*1e6, \
+                         yerr = errors_lc[inst]*1e6, **aux.photPlotParams())
+            axs[1].axhline(y=0, ls='--', lw=1, color='k', alpha=0.5)
+            # ax2.yaxis.set_major_formatter(plt.NullFormatter())
+            # try:
+            #     axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(P, t0))
+            # except:
+            #     axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(np.median(P), np.median(t0)))
+
+
+            # ax2.set_ylim([0.9985,1.0015]) ### CHANGE THIS
             axs[0].minorticks_on()
-            axs[1].errorbar(phases_lc, (dataset.data_lc[inst] - c_model - gp_model) * 1e6, \
-                         yerr=dataset.errors_lc[inst], fmt='.', alpha=0.1)
-            axs[1].set_ylabel('Residuals (ppm)')
-            axs[1].set_xlabel('Phases')
-            plt.tight_layout()
-            # fig.subplots_adjust(hspace=0)  # to make the space between rows smaller
+            axs[0].set_ylabel('relative flux')
+            axs[1].set_ylabel('residuals (ppm)')
+            axs[1].set_xlabel('orbital phase')
+            leg = axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+                                frameon=False, columnspacing=1.6)
             axs[1].minorticks_on()
-        plots[inst] = (fig, axs)
+            # axs[0].yaxis.set_tick_params(labelsize=fontsize_phot_ticks)
+            # axs[1].xaxis.set_tick_params(labelsize=fontsize_phot_ticks)
+            # axs[1].yaxis.set_tick_params(labelsize=fontsize_phot_ticks)
+            if inst == 'CHAT+i':
+                plt.xlim([-0.007,0.007]) ### CHANGE THIS
+            elif inst == 'TESSERACT+TESS':
+                axs[0].set_xlim([-0.015,0.015]) ### CHANGE THIS
+            else:
+                axs[0].set_xlim([-0.03,0.03]) ### CHANGE THIS
 
+            # plt.tight_layout()
+            # fig.subplots_adjust(hspace=0) # to make the space between rows smaller
+            # plt.savefig(resultsPath+'/phased_lc_{}_pl{}.pdf'.format(inst,i_transit), dpi=700)
+        plots[inst] = (fig, axs)
     return plots
 
 
