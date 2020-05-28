@@ -32,6 +32,8 @@ figure = {'dpi' : 100,
 mpl.rc('figure', **figure)
 mpl.rc('savefig', bbox = 'tight', dpi = 200)
 
+colors_rv = ['orangered', 'cornflowerblue']
+
 
 def plot_posteriors(julietResults, out_folder):
     """ plot individual posterior plots."""
@@ -224,7 +226,7 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
     axs[0].errorbar(dataset.times_lc[instrument]- 2458000, dataset.data_lc[instrument],
                  yerr=dataset.errors_lc[instrument], **aux.photPlotParams(), label = aux.label(instrument))
     axs[0].plot(dataset.times_lc[instrument]- 2458000, transit_model,
-                lw=0.5, label='model')
+                lw=1, label='model')
     axs[0].fill_between(dataset.times_lc[instrument]- 2458000, transit_up68, transit_low68,
                     color='cornflowerblue', alpha=0.6, zorder=5)
     axs[0].fill_between(dataset.times_lc[instrument]- 2458000, transit_up95, transit_low95,
@@ -247,103 +249,6 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
     axs[0].set_ylabel('Relative flux')
     axs[1].set_ylabel('Residuals (ppm)')
     return fig, axs
-
-
-def plot_rv_fit(dataset, results):
-    """ plot RV time series and best-fit model.
-    """
-    if isinstance(results, tuple):
-        # sometimes, juliet.fit returns a tuple
-        results = results[0]
-
-    min_time, max_time = np.min(dataset.times_rv['FEROS']) - 10, \
-                         np.max(dataset.times_rv['FEROS']) + 10
-    model_times = np.linspace(min_time, max_time, 1000)
-    # Now evaluate the model in those times, including 1 and 2 sigma CIs,
-    # and substract the systemic-velocity to get the Keplerian signal:
-    keplerian, up68, low68 = results.rv.evaluate('FEROS', t=model_times,
-                                                 return_err=True, all_samples = True) - \
-                np.median(results.posteriors['posterior_samples']['mu_FEROS'])
-    keplerian, up95, low95 = results.rv.evaluate('FEROS', t=model_times,
-                                                 return_err=True, all_samples = True, alpha=.9545) - \
-                np.median(results.posteriors['posterior_samples']['mu_FEROS'])
-
-
-    fig, axs = plt.subplots(2, sharex=True, figsize=[16, 5],
-                        gridspec_kw={'height_ratios': [5, 2]})
-    # axs[0].errorbar(dataset.times_rv['FEROS'], dataset.data_rv['FEROS'],
-    #              yerr=dataset.errors_rv['FEROS'], fmt='.', alpha=0.1)
-
-    # Now plot the (systematic-velocity corrected) RVs:
-    instruments = dataset.inames_rv
-    colors = ['orangered', 'cornflowerblue']
-    for i in range(len(instruments)):
-        instrument = instruments[i]
-        # Evaluate the median jitter for the instrument:
-        jitter = np.median(results.posteriors['posterior_samples']['sigma_w_' + instrument])
-        # Evaluate the median systemic-velocity:
-        mu = np.median(results.posteriors['posterior_samples']['mu_' + instrument])
-        # Plot original data with original errorbars:
-        axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
-                     yerr=dataset.errors_rv[instrument], fmt='o',
-                     markeredgewidth=1.5,
-                     mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
-                     ms=6, label=aux.label(instrument), zorder=10)
-
-        # Plot original errorbars + jitter (added in quadrature):
-        axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
-                     yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
-                     mec=colors[i], ecolor=colors[i], mfc='white',
-                     alpha=0.5, zorder=8)
-
-        # plot residuals
-        real_model = results.rv.evaluate(instrument, t=dataset.times_rv[instrument], all_samples=True)
-        axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
-                        dataset.data_rv[instrument] - real_model,
-                        yerr=dataset.errors_rv[instrument], fmt='o', \
-                        markeredgewidth=1.5,
-                        mec=colors[i], ecolor=colors[i], elinewidth=3, mfc='white', \
-                        ms=6, zorder=10)
-
-        # and the error bars for jitter
-        axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
-                        dataset.data_rv[instrument] - real_model,
-                        yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
-                        mec=colors[i], ecolor=colors[i], mfc='white',
-                        alpha=0.5, zorder=8)
-
-    # Plot Keplerian model and CIs:
-    axs[0].fill_between(model_times - 2458000, up68, low68,
-                     color='cornflowerblue', alpha=0.5, zorder=5)
-    axs[0].fill_between(model_times - 2458000, up95, low95,
-                    color='cornflowerblue', alpha=0.3, zorder=6)
-    axs[0].plot(model_times - 2458000, keplerian, color='black', zorder=7, lw=1,
-                label='joint model')
-
-   # # plt.title('Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
-   # #                                                                       results.posteriors['lnZerr']))
-    axs[0].set_xlim([min_time - 2458000, max_time - 2458000])
-    axs[0].set_ylabel('RV [m/s]')
-    axs[1].axhline(0., ls='--', lw=2, color='gray')
-    axs[1].set_xlabel('Time (BJD - 2458000)')
-    axs[1].set_ylabel('Residuals [m/s]')
-    axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
-                  frameon=False, columnspacing=1.6)
-    fig.align_ylabels()
-    return fig, axs
-
-
-def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
-                   beta=1., **kwargs):
-    """plot equilibrium temperature as a function of true anomaly theta."""
-    if ax is None:
-        fig, ax = plt.subplots(figsize=plotstyle.set_size())
-    theta = np.linspace(0., 2*np.pi, 200)
-    ax.plot(theta, aux.Teq(L, aux.r_of_theta(theta, a, e), albedo, emissivity,
-                           beta), **kwargs)
-    ax.set_xlabel('true anomaly [rad]')
-    ax.set_ylabel('equilibrium temperature [K]')
-    return fig, ax
 
 
 def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
@@ -446,12 +351,12 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
             axs[0].errorbar(phases_lc, data_lc[inst] - gp_data_model, \
                  yerr = errors_lc[inst], **aux.photPlotParams(), label=aux.label(inst),
                             zorder=6)
-            axs[0].plot(model_phases, model_lc, lw=.5, color='black', zorder=7)
+            axs[0].plot(model_phases, model_lc, lw=1, color='black', zorder=7)
 
             axs[0].fill_between(model_phases,transit_up68,transit_low68,\
                      color='cornflowerblue', alpha=0.6,zorder=5, label='model')
             axs[0].fill_between(model_phases,transit_up95,transit_low95,\
-                     color='cornflowerblue',alpha=0.2,zorder=5)
+                     color='cornflowerblue',alpha=0.3,zorder=5)
             # axs[0].fill_between(model_phases,transit_up99,transit_low99,\
             #          color='cornflowerblue',alpha=0.2,zorder=5)
 
@@ -488,6 +393,255 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
             # plt.savefig(resultsPath+'/phased_lc_{}_pl{}.pdf'.format(inst,i_transit), dpi=700)
         plots[inst] = (fig, axs)
     return plots
+
+
+def plot_rv_fit(dataset, results):
+    """ plot RV time series and best-fit model.
+    """
+    if isinstance(results, tuple):
+        # sometimes, juliet.fit returns a tuple
+        results = results[0]
+
+    min_time, max_time = np.min(dataset.times_rv['FEROS']) - 10, \
+                         np.max(dataset.times_rv['FEROS']) + 10
+    model_times = np.linspace(min_time, max_time, 1000)
+    # Now evaluate the model in those times, including 1 and 2 sigma CIs,
+    # and substract the systemic-velocity to get the Keplerian signal:
+    keplerian, up68, low68 = results.rv.evaluate('FEROS', t=model_times,
+                                                 return_err=True, all_samples = True) - \
+                np.median(results.posteriors['posterior_samples']['mu_FEROS'])
+    keplerian, up95, low95 = results.rv.evaluate('FEROS', t=model_times,
+                                                 return_err=True, all_samples = True, alpha=.9545) - \
+                np.median(results.posteriors['posterior_samples']['mu_FEROS'])
+
+
+    fig, axs = plt.subplots(2, sharex=True, figsize=[8.6, 3.2],
+                        gridspec_kw={'height_ratios': [5, 2]})
+    # axs[0].errorbar(dataset.times_rv['FEROS'], dataset.data_rv['FEROS'],
+    #              yerr=dataset.errors_rv['FEROS'], fmt='.', alpha=0.1)
+
+    # Now plot the (systematic-velocity corrected) RVs:
+    instruments = dataset.inames_rv
+    colors = colors_rv
+    for i in range(len(instruments)):
+        instrument = instruments[i]
+        # Evaluate the median jitter for the instrument:
+        jitter = np.median(results.posteriors['posterior_samples']['sigma_w_' + instrument])
+        # Evaluate the median systemic-velocity:
+        mu = np.median(results.posteriors['posterior_samples']['mu_' + instrument])
+        # Plot original data with original errorbars:
+        axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
+                     yerr=dataset.errors_rv[instrument], fmt='o',
+                     markeredgewidth=.75,
+                     mec=colors[i], ecolor=colors[i], elinewidth=1.5, mfc='white', \
+                     ms=3, label=aux.label(instrument), zorder=10)
+
+        # Plot original errorbars + jitter (added in quadrature):
+        axs[0].errorbar(dataset.times_rv[instrument] - 2458000, dataset.data_rv[instrument] - mu, \
+                     yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
+                     mec=colors[i], ecolor=colors[i], elinewidth=1.5, mfc='white',
+                     ms=3, alpha=0.5, zorder=8)
+
+        # plot residuals
+        real_model = results.rv.evaluate(instrument, t=dataset.times_rv[instrument], all_samples=True)
+        axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
+                        dataset.data_rv[instrument] - real_model,
+                        yerr=dataset.errors_rv[instrument], fmt='o', \
+                        markeredgewidth=.75,
+                        mec=colors[i], ecolor=colors[i], elinewidth=1.5, mfc='white', \
+                        ms=3, zorder=10)
+
+        # and the error bars for jitter
+        axs[1].errorbar(dataset.times_rv[instrument] - 2458000,
+                        dataset.data_rv[instrument] - real_model,
+                        yerr=np.sqrt(dataset.errors_rv[instrument] ** 2 + jitter ** 2), fmt='o', \
+                        mec=colors[i], ecolor=colors[i], elinewidth=1.5, mfc='white',
+                        ms=3, alpha=0.5, zorder=8)
+
+    # Plot Keplerian model and CIs:
+    axs[0].fill_between(model_times - 2458000, up68, low68,
+                     color='cornflowerblue', alpha=0.5, zorder=5, label='model')
+    axs[0].fill_between(model_times - 2458000, up95, low95,
+                    color='cornflowerblue', alpha=0.3, zorder=6)
+    axs[0].plot(model_times - 2458000, keplerian, color='black', zorder=7, lw=1)
+
+   # # plt.title('Log-evidence: {:.2f} $\pm$ {:.2f}'.format(results.posteriors['lnZ'], \
+   # #                                                                       results.posteriors['lnZerr']))
+    axs[0].set_xlim([min_time - 2458000, max_time - 2458000])
+    axs[0].set_ylabel('RV [m/s]')
+    axs[1].axhline(0., ls='--', lw=2, color='gray')
+    axs[1].set_xlabel('time (BJD - 2458000)')
+    axs[1].set_ylabel('residuals [m/s]')
+    axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+                  frameon=False, columnspacing=1.6)
+    fig.align_ylabels()
+    return fig, axs
+
+
+def plot_phasedRV(results):
+    """ plot phase-folded RV time series."""
+    if isinstance(results, tuple):
+        # sometimes, juliet.fit returns a tuple
+        results = results[0]
+
+    posteriors = results.posteriors
+    # print(results.data.priors)
+    # quit()
+    dataset = results.data
+
+    numbering_planets_rv = dataset.numbering_rv_planets
+    num_planets = len(numbering_planets_rv)
+    instruments_rv = dataset.inames_rv
+
+
+
+    min_time, max_time = np.min([np.min(dataset.times_rv[k]) for k in instruments_rv]) - 4, \
+                         np.max([np.max(dataset.times_rv[k]) for k in instruments_rv]) + 4
+    model_rv_times = np.linspace(min_time, max_time, int((max_time - min_time) * 5))
+
+    plots = {}
+    for inst in instruments_rv:
+        keplerian_model, kep_up68, kep_low68, components = results.rv.evaluate(inst,
+                                                                               t=model_rv_times,
+                                                                               return_err=True, alpha=0.68,
+                                                                               return_components=True, )
+        mu = np.median(posteriors['posterior_samples']['mu_{}'.format(inst)])
+        keplerian_model -= mu
+        kep_up68 -= mu
+        kep_low68 -= mu
+
+
+        for i_rv in numbering_planets_rv:
+            # To plot the phased rv we need the median period and time-of-transit center:
+            try:
+                P = np.median(results.posteriors['posterior_samples']['P_p{}'.format(i_rv)])
+            except KeyError:
+                P = dataset.priors['P_p{}'.format(i_rv)]['hyperparameters']
+            try:
+                t0 = np.median(results.posteriors['posterior_samples']['t0_p{}'.format(i_rv)])
+            except KeyError:
+                t0 = dataset.priors['t0_p{}'.format(i_rv)]['hyperparameters']
+            # Get phases:
+            # Now plot the model for planet pl. First get phases of the model:
+            phases_model = np.linspace(-0.5, 0.5, 1000)
+            model_times = phases_model * P + t0
+
+            try:
+                model_rv, kep_up68, kep_low68, model_components = results.rv.evaluate(inst, t=model_times, \
+                                                                                      return_components=True, \
+                                                                                      return_err=True, alpha=0.68)
+                _, kep_up95, kep_low95, _ = results.rv.evaluate(inst, t=model_times, \
+                                                                return_components=True, \
+                                                                return_err=True, alpha=0.95)
+                _, kep_up99, kep_low99, _ = results.rv.evaluate(inst, t=model_times, \
+                                                                return_components=True, \
+                                                                return_err=True, alpha=0.99)
+            except:
+                model_rv, kep_up68, kep_low68, model_components = results.rv.evaluate(inst, t=model_times, \
+                                                                                      return_components=True, \
+                                                                                      GPregressors=model_times, \
+                                                                                      return_err=True, alpha=0.68)
+                _, kep_up95, kep_low95, _ = results.rv.evaluate(inst, t=model_times, \
+                                                                return_components=True, \
+                                                                GPregressors=model_times, \
+                                                                return_err=True, alpha=0.95)
+                _, kep_up99, kep_low99, _ = results.rv.evaluate(inst, t=model_times, \
+                                                                return_components=True, \
+                                                                GPregressors=model_times, \
+                                                                return_err=True, alpha=0.99)
+
+            fig, axs = plt.subplots(2, 1, sharex=True, gridspec_kw={'height_ratios': [5, 2]})
+
+            # Plot phased model:
+            axs[0].plot(phases_model, model_components['p{}'.format(i_rv)], color='black', alpha=1, lw=1, zorder=3)
+            axs[0].fill_between(phases_model, kep_up68 - model_components['mu'], kep_low68 - model_components['mu'], \
+                             color='cornflowerblue', alpha=0.6, zorder=1, label='model')
+            axs[0].fill_between(phases_model, kep_up95 - model_components['mu'], kep_low95 - model_components['mu'], \
+                             color='cornflowerblue', alpha=0.3, zorder=1)
+            # axs[0].fill_between(phases_model, kep_up99 - model_components['mu'], kep_low99 - model_components['mu'], \
+            #                  color='cornflowerblue', alpha=0.4, zorder=1)
+
+            # Plot the data
+            for color, inst in zip(colors_rv, instruments_rv):
+                phases_data = juliet.get_phases(dataset.times_rv[inst], P, t0)  # on the data time
+                # Extract jitters:
+                # Evaluate the median jitter for the instrument:
+                try:
+                    jitter = np.median(posteriors['posterior_samples']['sigma_w_' + inst])
+                except:
+                    jitter = 0.0
+                mu = np.median(posteriors['posterior_samples']['mu_{}'.format(inst)])
+
+                # Plot data with the full model *minus* planet n substracted, so we see the Keplerian of planet
+                # pl imprinted on the data. For this, evaluate model in the data-times first:
+                c_model, c_components = results.rv.evaluate(inst, t=dataset.times_rv[inst], \
+                                                            all_samples=True, return_components=True, \
+                                                            GPregressors=dataset.times_rv[inst])
+
+                # Plot original data with original errorbars:
+                axs[0].errorbar(phases_data, dataset.data_rv[inst] - (c_model - c_components['p{}'.format(i_rv)]),
+                             yerr=dataset.errors_rv[inst], fmt='o',
+                             markeredgewidth=.75,
+                             mec=color, ecolor=color, elinewidth=1.5, mfc='white',
+                             ms=3, label=aux.label(inst), zorder=10)
+
+                # Plot original errorbars + jitter (added in quadrature):
+                axs[0].errorbar(phases_data, dataset.data_rv[inst] - (c_model - c_components['p{}'.format(i_rv)]), \
+                             yerr=np.sqrt(dataset.errors_rv[inst] ** 2 + jitter ** 2), fmt='o', \
+                     mec=color, ecolor=color, mfc='white',
+                     ms=3, alpha=0.5, zorder=8)
+
+                # plot residuals
+                axs[1].errorbar(phases_data, dataset.data_rv[inst] - c_model, \
+                             yerr=dataset.errors_rv[inst], fmt='o', \
+                        markeredgewidth=.75,
+                        mec=color, ecolor=color, elinewidth=1.5, mfc='white', \
+                        ms=3, zorder=10)
+
+                # and the error bars for jitter
+                axs[1].errorbar(phases_data, dataset.data_rv[inst] - c_model, \
+                             yerr=np.sqrt(dataset.errors_rv[inst] ** 2 + jitter ** 2), fmt='o', \
+                        mec=color, ecolor=color, mfc='white',
+                        ms=3, alpha=0.5, zorder=8)
+
+            # try:
+            #     axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(P, t0))
+            # except:
+            #     axs[0].set_title('P = {:.5f} t0 = {:.5f}'.format(np.median(P), np.median(t0)))
+            leg = axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+                                frameon=False, columnspacing=1.6)
+
+            axs[1].axhline(y=0, ls='--', lw=1, color='k', alpha=0.5)
+            # Define limits, labels:
+            axs[0].set_ylabel('RV [m/s]')
+            axs[1].set_ylabel('residuals [m/s]')
+            axs[1].set_xlabel('orbital phase')
+            axs[1].set_xlim([-0.5, 0.5])
+            axs[1].set_xlim([-0.5, 0.5])
+            # axs[0].yaxis.set_tick_params(labelsize=fontsize_rv_ticks)
+            # axs[1].xaxis.set_tick_params(labelsize=fontsize_rv_ticks)
+            # axs[1].yaxis.set_tick_params(labelsize=fontsize_rv_ticks)
+            # axs[0].set_ylim([-20,20])
+            axs[0].minorticks_on()
+            axs[1].minorticks_on()
+            axs[1].minorticks_on()
+        plots[inst] = (fig, axs)
+    return plots
+
+
+
+def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
+                   beta=1., **kwargs):
+    """plot equilibrium temperature as a function of true anomaly theta."""
+    if ax is None:
+        fig, ax = plt.subplots(figsize=plotstyle.set_size())
+    theta = np.linspace(0., 2*np.pi, 200)
+    ax.plot(theta, aux.Teq(L, aux.r_of_theta(theta, a, e), albedo, emissivity,
+                           beta), **kwargs)
+    ax.set_xlabel('true anomaly [rad]')
+    ax.set_ylabel('equilibrium temperature [K]')
+    return fig, ax
+
 
 
 def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
@@ -766,7 +920,7 @@ def plot_RV_BS(activityFile, plot_dir, results):
     fig, ax = plt.subplots()  # figsize=plotstyle.set_size())
     ax.errorbar(feros_dat.RV, feros_dat.BS, xerr=feros_dat.RV_E, yerr=feros_dat.BS_E, c='k', fmt='o',
                 lw=1.8, zorder=0, markeredgewidth=1.8, elinewidth=1.5)
-    sc = ax.scatter(feros_dat.RV, feros_dat.BS, c=feros_dat.phase, s=150, zorder=10, cmap='twilight',
+    sc = ax.scatter(feros_dat.RV, feros_dat.BS, c=feros_dat.phase, s=100, zorder=10, cmap='twilight',
                     vmin=-.5, vmax=.5, edgecolor='white')
     cbar = fig.colorbar(sc, label='orbital phase')
     cbar.set_ticks(np.arange(-.5, .51, .25))
