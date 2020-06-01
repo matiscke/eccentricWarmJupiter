@@ -588,7 +588,7 @@ def plot_phasedRV(results):
                 # Plot original errorbars + jitter (added in quadrature):
                 axs[0].errorbar(phases_data, dataset.data_rv[inst] - (c_model - c_components['p{}'.format(i_rv)]), \
                              yerr=np.sqrt(dataset.errors_rv[inst] ** 2 + jitter ** 2), fmt='o', \
-                     mec=color, ecolor=color, mfc='white',
+                     mec=color, ecolor=color, elinewidth=1.5, mfc='white',
                      ms=3, alpha=0.5, zorder=8)
 
                 # plot residuals
@@ -601,7 +601,7 @@ def plot_phasedRV(results):
                 # and the error bars for jitter
                 axs[1].errorbar(phases_data, dataset.data_rv[inst] - c_model, \
                              yerr=np.sqrt(dataset.errors_rv[inst] ** 2 + jitter ** 2), fmt='o', \
-                        mec=color, ecolor=color, mfc='white',
+                        mec=color, ecolor=color, elinewidth=1.5, mfc='white',
                         ms=3, alpha=0.5, zorder=8)
 
             # try:
