@@ -129,7 +129,7 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
         secosomega = julietResults.posteriors['posterior_samples']['secosomega_p1']
         sesinomega = julietResults.posteriors['posterior_samples']['sesinomega_p1']
         ecc = secosomega ** 2 + sesinomega ** 2
-        omega = np.arccos(secosomega / np.sqrt(ecc)) * np.pi/180
+        omega = np.arccos(secosomega / np.sqrt(ecc)) * 180/np.pi
     else:
         ecc = None
         omega = None
