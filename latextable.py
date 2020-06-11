@@ -550,9 +550,9 @@ def print_posterior_table(dataset, results, precision=2, printDerived=True, rvun
                 s_param = '~~~'
 
                 if param == 'mflux':
-                    s_param += '$M_{\\textnormal{' + inst + '}}$ (ppm)'
+                    s_param += '$M_{\\textnormal{' + inst + '}}$ [ppm]'
                 elif param == 'sigma_w':
-                    s_param += '$\\sigma_{\\textnormal{' + inst + '}}$ (ppm)'
+                    s_param += '$\\sigma_{\\textnormal{' + inst + '}}$ [ppm]'
                 elif param == 'q1':
                     s_param += '$q_{1,\\textnormal{' + inst + '}}$'
                 elif param == 'q2' and '{}_{}'.format(param, inst) in params_post:

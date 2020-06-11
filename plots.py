@@ -238,16 +238,16 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
                  dataset.errors_lc[instrument] * 1e6, **aux.photPlotParams(), label='residuals')
     axs[1].axhline(0, ls='--', lw=1, color='k', alpha=0.5)
 
-    axs[1].set_ylabel('Residuals (ppm)')
-    axs[1].set_xlabel('Time (BJD - 2458000)')
+    axs[1].set_ylabel('residuals [ppm]')
+    axs[1].set_xlabel('Time [BJD - 2458000]')
     axs[1].set_xlim(np.min(dataset.times_lc[instrument] - 2458000), np.max(dataset.times_lc[instrument] - 2458000))
 
     # Plot portion of the lightcurve, axes, etc.:
     # plt.xlim([1326,1332])
     # plt.ylim([0.999,1.001])
-    axs[1].set_xlabel('Time (BJD - 2458000)')
-    axs[0].set_ylabel('Relative flux')
-    axs[1].set_ylabel('Residuals (ppm)')
+    axs[1].set_xlabel('Time [BJD - 2458000]')
+    axs[0].set_ylabel('relative flux')
+    axs[1].set_ylabel('residuals [ppm]')
     return fig, axs
 
 
@@ -373,7 +373,7 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
             # ax2.set_ylim([0.9985,1.0015]) ### CHANGE THIS
             axs[0].minorticks_on()
             axs[0].set_ylabel('relative flux')
-            axs[1].set_ylabel('residuals (ppm)')
+            axs[1].set_ylabel('residuals [ppm]')
             axs[1].set_xlabel('orbital phase')
             leg = axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
                                 frameon=False, columnspacing=1.6)
@@ -470,7 +470,7 @@ def plot_rv_fit(dataset, results):
     axs[0].set_xlim([min_time - 2458000, max_time - 2458000])
     axs[0].set_ylabel('RV [m/s]')
     axs[1].axhline(0., ls='--', lw=2, color='gray')
-    axs[1].set_xlabel('time (BJD - 2458000)')
+    axs[1].set_xlabel('time [BJD - 2458000]')
     axs[1].set_ylabel('residuals [m/s]')
     axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
                   frameon=False, columnspacing=1.6)
@@ -796,7 +796,7 @@ def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
                     ha='center', xycoords=('data', 'axes fraction'))
     # axs[0].set_xscale('log')
     # axs[0].set_xlabel('Frequency [1/d]')
-    axs[0].set_ylabel('Power')
+    axs[0].set_ylabel('power')
     axs[0].annotate('RV', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -816,7 +816,7 @@ def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
         axs[1].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[1].set_xscale('log')
     # axs[1].set_xlabel('Period [d]')
-    axs[1].set_ylabel('Power')
+    axs[1].set_ylabel('power')
     axs[1].annotate(r'H$_\alpha$', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -834,7 +834,7 @@ def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
         axs[2].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[2].set_xscale('log')
     # axs[2].set_xlabel('Period [d]')
-    axs[2].set_ylabel('Power')
+    axs[2].set_ylabel('power')
     axs[2].annotate(r'log($R^\prime_{HK}$)', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -852,7 +852,7 @@ def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
         axs[3].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[3].set_xscale('log')
     # axs[3].set_xlabel('Period [d]')
-    axs[3].set_ylabel('Power')
+    axs[3].set_ylabel('power')
     axs[3].annotate(r'Na II', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -871,7 +871,7 @@ def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
     # axs[4].set_xscale('log')
     # axs[4].set_xlabel('Period [d]')
     axs[4].set_xlabel('Frequency [1/d]')
-    axs[4].set_ylabel('Power')
+    axs[4].set_ylabel('power')
     axs[4].annotate(r'He I', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -929,3 +929,12 @@ def plot_RV_BS(activityFile, plot_dir, results):
     ax.set_ylabel('bisector span [km/s]')
     fig.savefig(plot_dir + '/RV-BS.pdf')
     return fig, ax
+
+
+def plot_phasecurve(t, flux_planet):
+    """ plot the phase curve."""
+    fig, ax = plt.subplots(figsize=figsize)
+    ax.plot(t, flux_planet*1e6)
+    ax.set_xlabel("time [BJD]")
+    ax.set_ylabel("relative planetary flux [ppm]");
+    # plt.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))

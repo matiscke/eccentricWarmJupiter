@@ -162,7 +162,7 @@ def plot_periodograms(activityFile, plot_dir, results):
 
     # axs[0].set_xscale('log')
     # axs[0].set_xlabel('Frequency [1/d]')
-    axs[0].set_ylabel('Power')
+    axs[0].set_ylabel('power')
     axs[0].annotate('P = {:.2f} d'.format(transit_per), [1/transit_per, 1.05], color='C1',
                     ha='center', xycoords=('data', 'axes fraction'))
     axs[0].annotate('RV', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
@@ -183,7 +183,7 @@ def plot_periodograms(activityFile, plot_dir, results):
     axs[1].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[1].set_xscale('log')
     # axs[1].set_xlabel('Period [d]')
-    axs[1].set_ylabel('Power')
+    axs[1].set_ylabel('power')
     axs[1].annotate(r'H$_\alpha$', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -200,7 +200,7 @@ def plot_periodograms(activityFile, plot_dir, results):
     axs[2].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[2].set_xscale('log')
     # axs[2].set_xlabel('Period [d]')
-    axs[2].set_ylabel('Power')
+    axs[2].set_ylabel('power')
     axs[2].annotate(r'log($R^\prime_{HK}$)', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -217,7 +217,7 @@ def plot_periodograms(activityFile, plot_dir, results):
     axs[3].axvline(1/transit_per, lw=1.5, linestyle='dashed', color='C1')
     # axs[3].set_xscale('log')
     # axs[3].set_xlabel('Period [d]')
-    axs[3].set_ylabel('Power')
+    axs[3].set_ylabel('power')
     axs[3].annotate(r'Na II', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 
@@ -235,7 +235,7 @@ def plot_periodograms(activityFile, plot_dir, results):
     # axs[4].set_xscale('log')
     # axs[4].set_xlabel('Period [d]')
     axs[4].set_xlabel('Frequency [1/d]')
-    axs[4].set_ylabel('Power')
+    axs[4].set_ylabel('power')
     axs[4].annotate(r'He I', xy=(0, 1.01), xytext=(.02, .84), size=15, bbox=bbox_props,
                                ha='left', va='center', xycoords='axes fraction', textcoords='axes fraction')
 

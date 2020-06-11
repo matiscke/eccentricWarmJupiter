@@ -330,7 +330,7 @@ if instruments_lc is not None:
         # ax1 = plt.subplot(gs[0])
         ax1.errorbar(dataset.times_lc[inst]-2458000, dataset.data_lc[inst], dataset.errors_lc[inst],fmt='.',alpha=0.8, color='cornflowerblue')
         ax1.plot(dataset.times_lc[inst]-2458000, lc_model, color='black', zorder=100)
-        ax1.set_ylabel('Relative flux')
+        ax1.set_ylabel('relative flux')
         ax1.set_title('{0} | Log-evidence: {1:.3f} $\pm$ {2:.3f}'.format(inst, results.posteriors['lnZ'],\
              results.posteriors['lnZerr']))
         ax1.set_xlim(np.min(dataset.times_lc[inst]-2458000),np.max(dataset.times_lc[inst]-2458000))
@@ -341,8 +341,8 @@ if instruments_lc is not None:
         # ax2 = plt.subplot(gs[1])
         ax2.errorbar(dataset.times_lc[inst]-2458000, (dataset.data_lc[inst]-lc_model)*1e6, \
                    dataset.errors_lc[inst]*1e6,fmt='.',alpha=0.8,color='cornflowerblue')
-        ax2.set_ylabel('Residuals (ppm)')
-        ax2.set_xlabel('Time (BJD - 2458000)')
+        ax2.set_ylabel('residuals [ppm]')
+        ax2.set_xlabel('Time [BJD - 2458000]')
         ax2.set_xlim(np.min(dataset.times_lc[inst]-2458000),np.max(dataset.times_lc[inst]-2458000))
         plt.tight_layout()
         fig.subplots_adjust(hspace=0) # to make the space between rows smaller
@@ -392,13 +392,13 @@ if instruments_lc is not None:
             except:
                 ax2.set_title('P = {:.5f} t0 = {:.5f}'.format(np.median(P), np.median(t0)))
 
-            ax2.set_ylabel('Relative flux')
+            ax2.set_ylabel('relative flux')
             ax2.set_xlim([-0.1,0.1]) ### CHANGE THIS
             # ax2.set_ylim([0.9985,1.0015]) ### CHANGE THIS
             ax2.minorticks_on()
             ax3.errorbar(phases_lc, (dataset.data_lc[inst]-c_model -gp_model)*1e6, \
                          yerr = dataset.errors_lc[inst], fmt = '.', alpha = 0.1)
-            ax3.set_ylabel('Residuals (ppm)')
+            ax3.set_ylabel('residuals [ppm]')
             ax3.set_xlabel('Phases')
             plt.tight_layout()
             fig.subplots_adjust(hspace=0) # to make the space between rows smaller
@@ -528,7 +528,7 @@ ax2.axhline(y=0, ls='--', color='k', alpha=0.5)
 
 ax.minorticks_on()
 ax.legend(loc='upper right',fontsize=12)
-ax.set_ylabel('RV (m/s)')
+ax.set_ylabel('RV [m/s]')
 plot_title = '{} planet ('.format(num_planets)
 for i_rv in numbering_planets_rv:
     try:
@@ -545,7 +545,7 @@ ax.set_title('{0} | Log-evidence: {1:.3f} $\pm$ {2:.3f}'.format(plot_title, resu
 ax.set_xlim([np.min(model_rv_times)-2458000, np.max(model_rv_times)-2458000])
 ax2.set_xlim([np.min(model_rv_times)-2458000, np.max(model_rv_times)-2458000])
 ax2.set_xlabel('Time (BJD - '+str(2458000)+')')
-ax2.set_ylabel('Residual RV (m/s)')
+ax2.set_ylabel('Residual RV [m/s]')
 ax2.minorticks_on()
 plt.tight_layout()
 fig.subplots_adjust(hspace=0) # to make the space between rows smaller
@@ -641,8 +641,8 @@ for i_rv in numbering_planets_rv:
 
     ax2.axhline(y=0, ls='--', color='k', alpha=0.5)
     # Define limits, labels:
-    ax.set_ylabel('RV (m/s)')
-    ax2.set_ylabel('RV residuals (m/s)')
+    ax.set_ylabel('RV [m/s]')
+    ax2.set_ylabel('RV residuals [m/s]')
     ax2.set_xlabel('Phases')
     ax.set_xlim([-0.5,0.5])
     ax2.set_xlim([-0.5,0.5])
