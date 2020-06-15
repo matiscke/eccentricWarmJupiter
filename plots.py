@@ -634,7 +634,7 @@ def plot_Teq_theta(a, e, L, fig=None, ax=None, albedo=0., emissivity=1.,
                    beta=1., **kwargs):
     """plot equilibrium temperature as a function of true anomaly theta."""
     if ax is None:
-        fig, ax = plt.subplots(figsize=plotstyle.set_size())
+        fig, ax = plt.subplots()#figsize=plotstyle.set_size())
     theta = np.linspace(0., 2*np.pi, 200)
     ax.plot(theta, aux.Teq(L, aux.r_of_theta(theta, a, e), albedo, emissivity,
                            beta), **kwargs)
@@ -931,10 +931,90 @@ def plot_RV_BS(activityFile, plot_dir, results):
     return fig, ax
 
 
-def plot_phasecurve(t, flux_planet):
+def plot_phasecurve(t, flux_planet, results):
     """ plot the phase curve."""
-    fig, ax = plt.subplots(figsize=figsize)
+
+    # extract period, t_0 from posteriors, transform to phase space
+    P = np.median(results.posteriors['posterior_samples']['P_p1'])
+    t0 = np.median(results.posteriors['posterior_samples']['t0_p1'])
+    t = juliet.utils.get_phases(t, P, t0)
+
+    fig, ax = plt.subplots()
+    # ax.plot(t - 2458000, flux_planet*1e6)
     ax.plot(t, flux_planet*1e6)
-    ax.set_xlabel("time [BJD]")
+    # ax.set_xlabel("time [BJD - 2458000]")
+    ax.set_xlabel("orbital phase")
     ax.set_ylabel("relative planetary flux [ppm]");
     # plt.ticklabel_format(axis="y", style="sci", scilimits=(0, 0))
+    return fig, ax
+
+
+def plot_periodEcc(TEPCat, P, e, P_err=None, e_err=None, M=None, color=None):
+    """
+    Plot a scatter plot period vs ecc, size-coded by planet mass.
+
+    Parameters
+    ----------
+    TEPCat : pandas DataFrame
+        TEPCat catalog of well-characterized planets
+    color : string
+        column name for color-coding
+    ...
+
+    Returns
+    --------
+    fig : matplotlib figure
+        figure containing the plot
+    ax : axis object
+        contains axis object with the plot
+
+    Notes
+    -----
+    column 'errup2' must be upper error of eccentricity.
+    Jup, this is ugly.
+    """
+    c = TEPCat.copy()
+    # exclude planets with upper limits on ecc and with negative ecc entries
+    c = c[~((c.e == 0) & (c.errup2 > 0) | (c.e < 0))]
+    c = c[c.M_b > 0]
+    print('showing {} planets.'.format(len(c)))
+
+    fig, ax = plt.subplots()  # figsize=set_size(width=513/2))
+
+    # plot TEPCat catalog, optional color-code
+    if color is not None:
+        color = c[color]
+
+    sc = ax.scatter(c.Period, c.e, s=2*c.M_b, c=color)
+
+    # plot planet candidate
+    try:
+        #         ax.hlines(e, P_err[0], P_err[1])
+        #         ax.vlines(P, e_err[0], e_err[1])
+        ax.scatter(P, e, s=2*M)  # , label='TIC 237913194b')
+        annotColor = 'black'
+        _ = ax.annotate(r'TIC 237913194b', xy=(P, e), xytext=(P/2, 13/10*e), fontsize=8, va='center',
+                        color=annotColor, ha='center', arrowprops=dict(arrowstyle='->',
+                                                                       connectionstyle='arc3,rad=-0.2',
+                                                                       color=annotColor))
+    except:
+        pass
+
+    # make a legend with different marker sizes
+    # Create some sizes and some labels.
+    sizes = [10**i for i in range(-1, 3)]
+    dummy = [-1 for i in range(len(sizes))]
+    for i in range(len(sizes)):
+        ax.scatter(dummy, dummy, s=2*sizes[i], label=sizes[i], c='C0')
+    plt.legend(title='$\mathrm{M_p} \,\, [\mathrm{M_{Jup}}]$')
+
+    if color is not None:
+        cbar = fig.colorbar(sc, label='$T_\mathrm{eff}$')
+
+    ax.set_xscale('log')
+    ax.set_ylim(0, 1)
+    #     ax.set_ylim(0,.85)
+    ax.set_xlim(1, 100)
+    ax.set_xlabel('period [d]')
+    ax.set_ylabel('eccentricity')
+    return fig, ax
