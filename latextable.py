@@ -91,7 +91,7 @@ linend = '\\\\[0.1 cm]' # end of a line
 def print_data_table(dataset, type='rv'):
     out_folder = dataset.out_folder
     # if latex_fil = out_folder+'/data_table.tex'
-    fout = open(latex_fil, 'w')
+    fout = open('data_table.tex', 'w')
 
 def produce_this(s_param, dataset, param, key, params_priors, inst):
     if dataset.priors[key]['distribution'] == 'fixed':
@@ -711,5 +711,71 @@ def get_this(dist, sig=2):
     vals = '{0:.{digits}f}'.format(val, digits = digits)
     errhis = '{0:.{digits}f}'.format(errhi, digits = digits)
     errlos = '{0:.{digits}f}'.format(errlo, digits = digits)
-    s_param += '$'+vals+'^{+'+errhis+'}_{-'+errlos+'}$' + linend 
+    s_param = '$'+vals+'^{+'+errhis+'}_{-'+errlos+'}$' + linend
     return s_param
+
+
+def print_RVtable(activityFile, out_folder):
+    """
+
+
+    Parameters
+    ----------
+    activityFile : string
+        file containing the reduced time series
+
+    Returns
+    -------
+
+    """
+    latex_fil = out_folder + '/RV_data_table.tex'
+    t, rv, rve, TEXP, bis, bise = np.loadtxt(activityFile, unpack=True, skiprows=1, usecols=(1,2,3, 16, 4,5))
+    HALPHA,LOG_RHK, NA_II, HE_I = np.loadtxt(activityFile, unpack=True, skiprows=1, usecols=(19, 25, 27, 29))
+    # bis = [i*1000 for i in bis]  # change to m/s
+    # bise = [i*1000 for i in bise]  # change to m/s
+
+    ########
+    ########
+
+    data = [t, rv, rve, TEXP, bis, bise]
+    cols = ['BJD', 'RV [km/s]', '$\sigma_{\\rm RV}$ [km/s]', '$t_\mathrm{exp}$ [s]', 'BIS [km/s]',
+            '$\sigma_{\\rm BIS}$ [km/s]']
+
+    colstring = ''
+    for col in cols:
+        colstring += col + ' & '
+    colstring = colstring[:-3]  # get rid of the last '&'
+    colstring += '\\\\'
+
+    centeringstring = '\\begin{tabular}{' + ''.join(list(np.repeat('c', len(data)))) + '}'
+
+    # linend = '\\\\[0.1 cm]'  # end of a line
+    linend = '\\\\'
+
+    fout = open(latex_fil, 'w')
+
+    ## Beginning of the table
+    tab_start = ['\\begin{table*}', '\\centering',
+                 '\\caption{FEROS radial velocities and accompanying data for \stname\ used in this paper.}',
+                 '\\label{tab:RVdata}', centeringstring, \
+                 '\\hline', '\\hline', '\\noalign{\\smallskip}', colstring, \
+                 '\\noalign{\\smallskip}', '\\hline', '\\hline', '\\noalign{\\smallskip}']
+
+    for elem in tab_start:
+        fout.write(elem + '\n')
+
+    for i in range(len(data[0])):
+        s = ''
+        for elem in data:
+            s += '{:.3f}'.format(elem[i]) + ' & '
+        s = s[:-3]  # get rid of the last '&'
+        fout.write(s)
+
+        fout.write(linend + '\n')
+    # fout.write('\\noalign{\\smallskip}\n')
+    # s_param = '~~~'
+
+    tab_end = ['\\noalign{\\smallskip}', '\\hline', '\\hline', '\\end{tabular}', '\\end{table*}']
+    for elem in tab_end:
+        fout.write(elem + '\n')
+    fout.close()
