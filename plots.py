@@ -172,9 +172,18 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
     if u1_chat is not None:
         posteriors.append(('u1_CHAT+i', u1_chat))
 
-    posterior_data = np.array([p[1] for p in posteriors]).T
-    fig = corner.corner(posterior_data, #posterior_names,
-                        labels=[aux.format(p[0]) + '\n' for p in posteriors],
+    # # select parameters for the plot
+    if posterior_names is not None:
+        posterior_subset = []
+        for label, posterior_samples in zip([p[0] for p in posteriors], posteriors):  # [p[1] for p in posteriors]):
+            if label in posterior_names:
+                posterior_subset.append(posterior_samples)
+    else:
+        posterior_subset = posteriors
+
+    posterior_data = np.array([p[1] for p in posterior_subset]).T
+    fig = corner.corner(posterior_data, fig, axes,#posterior_names,
+                        labels=[aux.format(p[0]) + '\n' for p in posterior_subset],
                         **kwargs)
     # tune look of corner figure
     caxes = fig.axes
