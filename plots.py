@@ -77,7 +77,7 @@ def plot_posteriors(julietResults, out_folder):
             plt.close(fig)
 
 
-def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., reverse=False, axes=None, **kwargs):
+def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., reverse=False, fig=None, axes=None, **kwargs):
     """ Produce a corner plot of posteriors from a juliet fit.
 
     Parameters
@@ -188,7 +188,7 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., reverse=F
 
 
     posterior_data = np.array([p[1] for p in posterior_subset]).T
-    fig = corner.corner(posterior_data,axes=axes, #posterior_names,
+    fig = corner.corner(posterior_data, fig=fig, axes=axes, #posterior_names,
                         labels=[aux.format(p[0]) + '\n' for p in posterior_subset], reverse=reverse,
                         **kwargs)
     # tune look of corner figure
