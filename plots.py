@@ -182,7 +182,7 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
         posterior_subset = posteriors
 
     posterior_data = np.array([p[1] for p in posterior_subset]).T
-    fig = corner.corner(posterior_data, fig, axes,#posterior_names,
+    fig = corner.corner(posterior_data, #posterior_names,
                         labels=[aux.format(p[0]) + '\n' for p in posterior_subset],
                         **kwargs)
     # tune look of corner figure
