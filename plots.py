@@ -77,7 +77,7 @@ def plot_posteriors(julietResults, out_folder):
             plt.close(fig)
 
 
-def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs):
+def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., reverse=False, fig=None, axes=None, **kwargs):
     """ Produce a corner plot of posteriors from a juliet fit.
 
     Parameters
@@ -175,24 +175,39 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., **kwargs)
     # # select parameters for the plot
     if posterior_names is not None:
         posterior_subset = []
-        for label, posterior_samples in zip([p[0] for p in posteriors], posteriors):  # [p[1] for p in posteriors]):
-            if label in posterior_names:
-                posterior_subset.append(posterior_samples)
+
+        # for label, posterior_samples in zip([p[0] for p in posteriors], posteriors):  # [p[1] for p in posteriors]):
+        #     if label in posterior_names:
+        #         posterior_subset.append(posterior_samples)
+
+        for label in posterior_names:
+            posterior_subset.append([label, julietResults.posteriors['posterior_samples'][label]])
+
     else:
         posterior_subset = posteriors
 
     posterior_data = np.array([p[1] for p in posterior_subset]).T
-    fig = corner.corner(posterior_data, #posterior_names,
-                        labels=[aux.format(p[0]) + '\n' for p in posterior_subset],
+    fig = corner.corner(posterior_data, fig=fig, axes=axes, #posterior_names,
+                        labels=[aux.format(p[0]) + '\n' for p in posterior_subset], reverse=reverse,
                         **kwargs)
     # tune look of corner figure
-    caxes = fig.axes
-    for ax in caxes:
-        ax.spines['top'].set_visible(False)
-        ax.spines['right'].set_visible(False)
-        ax.xaxis.set_label_coords(0.5, -0.45)
-        ax.yaxis.set_label_coords(-0.35, 0.5)
-    fig.subplots_adjust(left=0.08, right=0.995, bottom=0.09, top=0.97,
+    if axes is None:
+        axes = fig.axes
+    else:
+        axes = axes.flatten()
+    if not reverse:
+        for ax in axes:
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.xaxis.set_label_coords(0.5, -.6)
+            ax.yaxis.set_label_coords(-0.35, 0.5)
+    else:
+        for ax in axes:
+            ax.spines['bottom'].set_visible(False)
+            ax.spines['left'].set_visible(False)
+            ax.xaxis.set_label_coords(0.5, -0.2)
+            ax.yaxis.set_label_coords(-0.35, 0.5)
+        fig.subplots_adjust(left=0.08, right=0.995, bottom=0.09, top=0.97,
                         wspace=.15, hspace=.15)
     return fig
 
@@ -940,7 +955,7 @@ def plot_RV_BS(activityFile, plot_dir, results):
     return fig, ax
 
 
-def plot_phasecurve(t, flux_planet, results):
+def plot_phasecurve(t, flux_planet, results, fig=None, ax=None, **kwargs):
     """ plot the phase curve."""
 
     # extract period, t_0 from posteriors, transform to phase space
@@ -948,9 +963,10 @@ def plot_phasecurve(t, flux_planet, results):
     t0 = np.median(results.posteriors['posterior_samples']['t0_p1'])
     t = juliet.utils.get_phases(t, P, t0)
 
-    fig, ax = plt.subplots()
+    if ax is None:
+        fig, ax = plt.subplots()
     # ax.plot(t - 2458000, flux_planet*1e6)
-    ax.plot(t, flux_planet*1e6)
+    ax.plot(t, flux_planet*1e6, **kwargs)
     # ax.set_xlabel("time [BJD - 2458000]")
     ax.set_xlabel("orbital phase")
     ax.set_ylabel("relative planetary flux [ppm]");
