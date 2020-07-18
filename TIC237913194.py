@@ -11,33 +11,11 @@ except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
 datafolder = 'data/'
-# out_folder = 'out/16_tess+noGP'
-# out_folder = 'out/17_tess+GP'
-# out_folder = 'out/18_tess+chat+GP'
-# out_folder = 'out/19_tess+chat+feros+noGP'
-# out_folder = 'out/20_tess+chat+feros+GP'
-# out_folder = 'out/21_tess+chat+feros+CORALIE+noGP'
-# out_folder = 'out/22_tess+chat+feros+CORALIE+GP'
-# out_folder = 'out/23_tess+chat+feros+noGP'
-# out_folder = 'out/25_tess+chat+feros+noGP'
-# out_folder = 'out/26_tess+chat+feros+noGP'
-# out_folder = 'out/27_tess+chat+feros+GP'
-# out_folder = 'out/28_tess+chat+feros+GP'
-# out_folder = 'out/29_feros'
-# out_folder = 'out/30_feros_noPlanet'
-# out_folder = 'out/32b_feros_lognormalPprior'
-# out_folder = 'out/33d_feros_uniformPprior'
-# out_folder = 'out/34_feros_noPlanet'
-# out_folder = 'out/35_feros_uniformPprior_circular'
-# out_folder = 'out/36_feros_uniformPprior_2p_circular'
-# out_folder = 'out/37_feros_uniformPprior_2p_1ecc2circular'
-# out_folder = 'out/38b_feros_uniformPprior_2p_2ecc'
 
-## new joint fits
-out_folder = 'out/39_tess+chat+feros+GP'
-# out_folder = 'out/39b_tess+chat+feros+GP'
-# out_folder = 'out/39c_tess+chat+feros+GP'
+# out_folder = 'out/39_tess+chat+feros+GP'
 # out_folder = 'out/40_tess+chat+feros+GP+linearTrend'
+# out_folder = 'out/41_tess+chat+lcogt+feros+GP'
+out_folder = 'out/42_tess+chat+lcogt+feros+GP' # same but number
 
 
 
@@ -51,10 +29,10 @@ if 'GP' in out_folder and not 'noGP' in out_folder:
 else:
     GP = False
 
-instruments_lc = []
+# instruments_lc = []
 # instruments_lc = ['TESSERACT+TESS']
-instruments_lc = ['TESSERACT+TESS', 'CHAT+i']
-outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602]
+instruments_lc = ['TESSERACT+TESS', 'CHAT+i', 'LCOGT']
+outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602] # outliers in TESS light curve
 instruments_rv = ['FEROS']
 # instruments_rv = ['FEROS', 'CORALIE']
 colors_rv = ['orangered', 'cornflowerblue', 'purple', 'forestgreen']
@@ -122,6 +100,14 @@ def get_priors(GP=True):
     'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
     'mflux_CHAT+i' : ['normal', [0.0,0.1]],
     'mdilution_CHAT+i' : ['fixed', 1.0],
+
+
+    # LCOGT
+    'q1_LCOGT' : ['uniform', [0., 1.]],
+    ##### 'q2_LCOGT' : ['uniform', [0., 1.]],
+    'sigma_w_LCOGT' : ['loguniform', [1e-5,1e5]],
+    'mflux_LCOGT' : ['normal', [0.0,0.1]],
+    'mdilution_LCOGT' : ['fixed', 1.0],
 
     # RV planetary
     'K_p1' : ['uniform', [140., 260.]], # prior based on RV-only fit (fit No 33)
@@ -232,6 +218,8 @@ def equilibriumTemp():
     return fig, ax
 
 def main(datafolder, out_folder, GP):
+    """ run the fits and save the results to the `out_folder`"""
+
     priors, params = get_priors(GP)
     times_lc, fluxes, fluxes_error, gp_times_lc = read_photometry(datafolder,
                                                     plotPhot=False, outlierIndices=outlierIndices)
@@ -324,10 +312,8 @@ def printTables(out_folder):
 
 
 if __name__ == "__main__":
-    # results = main(datafolder, out_folder, GP)
-    # pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
+    results = main(datafolder, out_folder, GP)
+    pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
 
     # results = showResults(datafolder, out_folder, pl=pl, pu=pu)
-    pass
-
-printTables(out_folder)
+    # printTables(out_folder)
