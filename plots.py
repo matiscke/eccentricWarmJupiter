@@ -405,12 +405,16 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
             # axs[0].yaxis.set_tick_params(labelsize=fontsize_phot_ticks)
             # axs[1].xaxis.set_tick_params(labelsize=fontsize_phot_ticks)
             # axs[1].yaxis.set_tick_params(labelsize=fontsize_phot_ticks)
+
+            # custom x limits, adapt for specific case
             if inst == 'CHAT+i':
-                plt.xlim([-0.007,0.007]) ### CHANGE THIS
+                plt.xlim([-0.007,0.007])
             elif inst == 'TESSERACT+TESS':
-                axs[0].set_xlim([-0.015,0.015]) ### CHANGE THIS
+                axs[0].set_xlim([-0.015,0.015])
+            elif inst == 'LCOGT':
+                axs[0].set_xlim([-0.004, 0.004])
             else:
-                axs[0].set_xlim([-0.03,0.03]) ### CHANGE THIS
+                axs[0].set_xlim([-0.03,0.03])
 
             # plt.tight_layout()
             # fig.subplots_adjust(hspace=0) # to make the space between rows smaller

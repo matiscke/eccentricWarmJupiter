@@ -14,8 +14,8 @@ datafolder = 'data/'
 
 # out_folder = 'out/39_tess+chat+feros+GP'
 # out_folder = 'out/40_tess+chat+feros+GP+linearTrend'
-# out_folder = 'out/41_tess+chat+lcogt+feros+GP'
-out_folder = 'out/42_tess+chat+lcogt+feros+GP' # same but number
+out_folder = 'out/41_tess+chat+lcogt+feros+GP'
+# out_folder = 'out/42_tess+chat+lcogt+feros+GP' # same but number
 
 
 
@@ -312,8 +312,8 @@ def printTables(out_folder):
 
 
 if __name__ == "__main__":
-    results = main(datafolder, out_folder, GP)
-    pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
+    # results = main(datafolder, out_folder, GP)
+    # pickle.dump(results, open(out_folder + '/results.pkl', 'wb'))
 
-    # results = showResults(datafolder, out_folder, pl=pl, pu=pu)
-    # printTables(out_folder)
+    results = showResults(datafolder, out_folder, pl=pl, pu=pu)
+    printTables(out_folder)
