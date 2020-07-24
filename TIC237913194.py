@@ -18,8 +18,9 @@ datafolder = 'data/'
 # out_folder = 'out/42_tess+chat+lcogt+feros+GP' # same but number
 # out_folder = 'out/43b_tess+chat+lcogt&GP+feros+GP' # same but with GP for LCOGT
 # out_folder = 'out/44_lcogt&GP' # LCOGT phot + matern kernel GP
-out_folder = 'out/44b_lcogt&GP' # different priors for matern kernel
+# out_folder = 'out/44f_lcogt&GP' # different priors for matern kernel
 # out_folder = 'out/45_lcogt' # LCOGT phot only
+out_folder = 'out/46_tess+chat+lcogt&GP+feros+GP'
 
 
 # constrain Rp/Rs
@@ -34,11 +35,11 @@ else:
 
 # instruments_lc = []
 # instruments_lc = ['TESSERACT+TESS']
-instruments_lc = ['LCOGT']
-# instruments_lc = ['TESSERACT+TESS', 'CHAT+i', 'LCOGT']
+# instruments_lc = ['LCOGT']
+instruments_lc = ['TESSERACT+TESS', 'CHAT+i', 'LCOGT']
 outlierIndices = [992, 1023, 1036, 1059, 1060, 1061, 1078, 1082, 1083, 1084, 1602] # outliers in TESS light curve
-instruments_rv = []
-# instruments_rv = ['FEROS']
+# instruments_rv = []
+instruments_rv = ['FEROS']
 # instruments_rv = ['FEROS', 'CORALIE']
 colors_rv = ['orangered', 'cornflowerblue', 'purple', 'forestgreen']
 
@@ -58,13 +59,13 @@ def get_priors(GP=True):
     params = {
     # planet 1
 
-    'P_p1' : ['normal', [15.1688, 0.0001]],
+    'P_p1' : ['normal', [15.1688, 0.2]],
     # 'P_p1' : ['uniform', [1, 30]],
     # 'P_p1' : ['loguniform', [.1, 30]],
     # 'P_p1' : ['fixed', 1.],
     # 'P_p2' : ['uniform', [1, 30]],
 
-    't0_p1' : ['normal', [2458319.15, 0.01]],
+    't0_p1' : ['normal', [2458319.15, 0.2]],
     # 't0_p1' : ['uniform', [2458325.32623291, 2458449.32623291]],
     # 't0_p1' : ['uniform', [2458670.0, 2458700.0]],
     # 't0_p1' : ['fixed', 1.],
@@ -91,20 +92,20 @@ def get_priors(GP=True):
     'rho' : ['normal', [1120,110]],
 
     # TESS
-    # 'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
-    # 'q2_TESSERACT+TESS' : ['uniform', [0., 1.]],
-    # 'sigma_w_TESSERACT+TESS' : ['loguniform', [1e-5,1e5]],
-    # 'mflux_TESSERACT+TESS' : ['normal', [0.0,0.1]],
-    # 'mdilution_TESSERACT+TESS' : ['fixed', 1.0],
-    # 'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
-    # 'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
+    'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
+    'q2_TESSERACT+TESS' : ['uniform', [0., 1.]],
+    'sigma_w_TESSERACT+TESS' : ['loguniform', [1e-5,1e5]],
+    'mflux_TESSERACT+TESS' : ['normal', [0.0,0.1]],
+    'mdilution_TESSERACT+TESS' : ['fixed', 1.0],
+    'GP_sigma_TESSERACT+TESS' : ['loguniform', [1e-8, 5e-4]],
+    'GP_timescale_TESSERACT+TESS' : ['loguniform', [1e-4, 2]],
 
     # CHAT+i
-    # 'q1_CHAT+i' : ['uniform', [0., 1.]],
-    # ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
-    # 'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
-    # 'mflux_CHAT+i' : ['normal', [0.0,0.1]],
-    # 'mdilution_CHAT+i' : ['fixed', 1.0],
+    'q1_CHAT+i' : ['uniform', [0., 1.]],
+    ##### 'q2_CHAT+i' : ['uniform', [0., 1.]],
+    'sigma_w_CHAT+i' : ['loguniform', [1e-5,1e5]],
+    'mflux_CHAT+i' : ['normal', [0.0,0.1]],
+    'mdilution_CHAT+i' : ['fixed', 1.0],
 
 
     # LCOGT
@@ -114,19 +115,19 @@ def get_priors(GP=True):
     'mflux_LCOGT' : ['normal', [0.0,0.1]],
     'mdilution_LCOGT' : ['fixed', 1.0],
     # add GP params for Matern kernel:
-    'GP_sigma_LCOGT' : ['loguniform', [1,1e4]], # dispersion (ppm?)
-    'GP_rho_LCOGT' : ['loguniform', [1e-2,10]], # timescale
+    'GP_sigma_LCOGT' : ['loguniform', [0.0002,0.005]], # dispersion (ppm?)
+    'GP_rho_LCOGT' : ['loguniform', [0.005,1.]], # timescale: ~[cadence, baseline]
 
 
     # RV planetary
-    # 'K_p1' : ['uniform', [140., 260.]], # prior based on RV-only fit (fit No 33)
+    'K_p1' : ['uniform', [140., 260.]], # prior based on RV-only fit (fit No 33)
     # 'K_p1' : ['fixed', 0.], # no-planet-case
 
 
-    # # RV FEROS
-    # 'mu_FEROS' : ['uniform', [-30, 30]], # prior based on RV-only fit (fit No 33)
-    # # 'sigma_w_FEROS' : ['loguniform', [0.01, 1e3]],
-    # 'sigma_w_FEROS' : ['loguniform', [1., 1e2]], # prior based on RV-only fit (fit No 33)
+    # RV FEROS
+    'mu_FEROS' : ['uniform', [-30, 30]], # prior based on RV-only fit (fit No 33)
+    # 'sigma_w_FEROS' : ['loguniform', [0.01, 1e3]],
+    'sigma_w_FEROS' : ['loguniform', [1., 1e2]], # prior based on RV-only fit (fit No 33)
 
     # RV CORALIE
     # 'mu_CORALIE' : ['uniform', [-1000, 1000]],
