@@ -86,7 +86,7 @@ thetaterms = ['theta0', 'theta1', 'theta2', 'theta3', 'theta4', 'theta5', 'theta
 orderinst_lc = np.append(['mdilution','mflux', 'sigma_w', 'q1', 'q2'], thetaterms)
 orderinst_rv = np.append(['mu','sigma_w'], thetaterms)
 
-linend = '\\\\[0.1 cm]' # end of a line
+linend = '\\\\' # end of a line
 
 def print_data_table(dataset, type='rv'):
     out_folder = dataset.out_folder
@@ -420,7 +420,7 @@ def print_posterior_table(dataset, results, precision=2, printDerived=True, rvun
     for elem in tab_start:
         fout.write(elem+'\n')
 
-    linend = '\\\\[0.1 cm]'
+    linend = '\\\\'
     params_post = np.array([i for i in results.posteriors['posterior_samples'].keys()]) # transform it to array
 
     ## Stellar parameters first
@@ -749,7 +749,6 @@ def print_RVtable(activityFile, out_folder):
 
     centeringstring = '\\begin{tabular}{' + ''.join(list(np.repeat('c', len(data)))) + '}'
 
-    # linend = '\\\\[0.1 cm]'  # end of a line
     linend = '\\\\'
 
     fout = open(latex_fil, 'w')

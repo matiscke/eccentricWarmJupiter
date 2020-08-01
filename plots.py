@@ -22,7 +22,7 @@ try:
 except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
-figure = {'dpi' : 100,
+figure = {'dpi' : 200,
           'subplot.left'    : 0.16,   # the left side of the subplots of the figure
           'subplot.bottom'  : 0.21,   # the bottom of the subplots of the figure
           'subplot.right'   : 0.98,   # the right side of the subplots of the figure
@@ -212,7 +212,7 @@ def plot_cornerPlot(julietResults, posterior_names=None, pl=0., pu=1., reverse=F
     return fig
 
 
-def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+TESS'):
+def plot_photometry(dataset, results, fig=None, axs=None, instrument=None):
     """ plot photometry and best fit from transit model.
 
     Parameters
@@ -238,6 +238,16 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
     if isinstance(results, tuple):
         # sometimes, juliet.fit returns a tuple
         results = results[0]
+
+    if instrument is not None:
+        instruments = [instrument]
+    elif dataset.inames_lc is not None:
+        # make a plot for each photometric instrument. Ignore provided figure or axes.
+        instruments = dataset.inames_lc
+        axs = None
+    else:
+        # no photometric data in the dataset. Nothing to plot.
+        return
 
     transit_model, transit_up68, transit_low68 = results.lc.evaluate(instrument,
                                                                      return_err=True)
@@ -272,6 +282,9 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument='TESSERACT+
     axs[1].set_xlabel('Time [BJD - 2458000]')
     axs[0].set_ylabel('relative flux')
     axs[1].set_ylabel('residuals [ppm]')
+
+    leg = axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
+                        frameon=False, columnspacing=1.6)
     return fig, axs
 
 
@@ -409,10 +422,13 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
             # custom x limits, adapt for specific case
             if inst == 'CHAT+i':
                 plt.xlim([-0.007,0.007])
+                axs[1].set_ylim([-5200, 5200])
             elif inst == 'TESSERACT+TESS':
                 axs[0].set_xlim([-0.015,0.015])
+                axs[1].set_ylim([-2500, 2500])
             elif inst == 'LCOGT':
                 axs[0].set_xlim([-0.004, 0.004])
+                axs[1].set_ylim([-2500, 2500])
             else:
                 axs[0].set_xlim([-0.03,0.03])
 
@@ -911,6 +927,10 @@ def plot_periodograms(activityFile, plot_dir, results, saveFig=True):
     plt.show()
     if saveFig:
         fig.savefig(plot_dir + '/periodograms.pdf')
+
+    # reset mpl settings
+    font = {'size'   : 11}
+    mpl.rc('font', **font)
 
     return fig, axs
 
