@@ -385,14 +385,16 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
                                         GPregressors=model_times, \
                                         return_err=True, alpha=0.99)
 
-            axs[0].errorbar(phases_lc, data_lc[inst] - gp_data_model, \
+            mu = np.median(results.posteriors['posterior_samples']['mflux_{}'.format(inst)])
+
+            axs[0].errorbar(phases_lc, data_lc[inst] - gp_data_model + mu, \
                  yerr = errors_lc[inst], **aux.photPlotParams(), label=aux.label(inst),
                             zorder=6)
-            axs[0].plot(model_phases, model_lc, lw=1, color='black', zorder=7)
+            axs[0].plot(model_phases, model_lc + mu, lw=1, color='black', zorder=7)
 
-            axs[0].fill_between(model_phases,transit_up68,transit_low68,\
+            axs[0].fill_between(model_phases,transit_up68 + mu,transit_low68 + mu,\
                      color='cornflowerblue', alpha=0.6,zorder=5, label='model')
-            axs[0].fill_between(model_phases,transit_up95,transit_low95,\
+            axs[0].fill_between(model_phases,transit_up95 + mu,transit_low95 + mu,\
                      color='cornflowerblue',alpha=0.3,zorder=5)
             # axs[0].fill_between(model_phases,transit_up99,transit_low99,\
             #          color='cornflowerblue',alpha=0.2,zorder=5)
