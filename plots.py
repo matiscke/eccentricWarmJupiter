@@ -288,7 +288,8 @@ def plot_photometry(dataset, results, fig=None, axs=None, instrument=None):
     return fig, axs
 
 
-def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
+def plot_phasedPhotometry(dataset, results, instrument=None, ylabels=True,
+                          narrowAspect=False, color='C0',):
     """ plot phased photometry and best fit from transit model.
 
     Parameters
@@ -299,6 +300,13 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
         a results object returned by juliet.fit()
     instrument : string (optional)
         name of the instrument. If not given, create a plot for each instrument.
+    ylabels : bool (optional)
+        should ylabels be drawn?
+    narrowAspect : bool (optional)
+        enable narrower aspect ratio for side-by-side plots
+    color : string (optional)
+        the color to be used for the CIs. default is the first element of the
+        default mpl cycle.
 
     Returns
     --------
@@ -355,7 +363,11 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
             except KeyError:
                 t0 = results.data.priors['t0_p{}'.format(i_transit)]['hyperparameters']
 
-            fig,axs = plt.subplots(2,1,sharex=True, gridspec_kw = {'height_ratios':[5,2]})
+            if narrowAspect:
+                fig,axs = plt.subplots(2,1,sharex=True, figsize=[2.6, 3.2], gridspec_kw = {'height_ratios':[5,2]})
+            else:
+                fig,axs = plt.subplots(2,1,sharex=True, gridspec_kw = {'height_ratios':[5,2]})
+
             phases_lc = juliet.utils.get_phases(times_lc[inst], P, t0)
 
             model_phases = np.linspace(-0.04,0.04,1000)
@@ -411,8 +423,9 @@ def plot_phasedPhotometry(dataset, results, instrument=None, color='C0'):
 
             # ax2.set_ylim([0.9985,1.0015]) ### CHANGE THIS
             axs[0].minorticks_on()
-            axs[0].set_ylabel('relative flux')
-            axs[1].set_ylabel('residuals [ppm]')
+            if ylabels:
+                axs[0].set_ylabel('relative flux')
+                axs[1].set_ylabel('residuals [ppm]')
             axs[1].set_xlabel('orbital phase')
             leg = axs[0].legend(loc='lower left', ncol=99, bbox_to_anchor=(0., 1.),
                                 frameon=False, columnspacing=1.6)
