@@ -20,7 +20,10 @@ datafolder = 'data/'
 # out_folder = 'out/44_lcogt&GP' # LCOGT phot + matern kernel GP
 # out_folder = 'out/44f_lcogt&GP' # different priors for matern kernel
 # out_folder = 'out/45_lcogt' # LCOGT phot only
-out_folder = 'out/46_tess+chat+lcogt&GP+feros+GP'
+# out_folder = 'out/46_tess+chat+lcogt&GP+feros+GP'
+####------------------------------------------------
+# from here on, fits are with supersampling of long cadence TESS data
+out_folder = 'out/47_tess+chat+lcogt+feros+GP'  # same as 41, but with supersampling
 
 
 # constrain Rp/Rs
@@ -115,8 +118,8 @@ def get_priors(GP=True):
     'mflux_LCOGT' : ['normal', [0.0,0.1]],
     'mdilution_LCOGT' : ['fixed', 1.0],
     # add GP params for Matern kernel:
-    'GP_sigma_LCOGT' : ['loguniform', [0.0002,0.005]], # dispersion (ppm?)
-    'GP_rho_LCOGT' : ['loguniform', [0.005,1.]], # timescale: ~[cadence, baseline]
+    # 'GP_sigma_LCOGT' : ['loguniform', [0.0002,0.005]], # dispersion (ppm?)
+    # 'GP_rho_LCOGT' : ['loguniform', [0.005,1.]], # timescale: ~[cadence, baseline]
 
 
     # RV planetary
@@ -181,7 +184,7 @@ def read_photometry(datafolder, plotPhot=False, outlierIndices=None, instruments
             plt.show()
 
     # include GPs for LCOGT
-    gp_times_lc['LCOGT'] = times_lc['LCOGT']
+    # gp_times_lc['LCOGT'] = times_lc['LCOGT']
 
     return times_lc, fluxes, fluxes_error, gp_times_lc
 
@@ -248,13 +251,14 @@ def main(datafolder, out_folder, GP):
         t_lc=times_lc, y_lc=fluxes, yerr_lc=fluxes_error,
         t_rv=times_rv, y_rv=rvs, yerr_rv=rvs_error,
         GP_regressors_lc=GP_regressors,
+        lc_instrument_supersamp=['TESSERACT+TESS'], lc_exptime_supersamp=[0.020434], lc_n_supersamp=[20], # supersample to account for long cadence, 30min = 0.020434d
         out_folder=out_folder, verbose=True)
 
     results = dataset.fit(use_dynesty=False, n_live_points=1500, ecclim=0.7,
                           dynamic=True,
                           pl=pl, pu=pu)
 
-    lnZstr = r'Log - evidence: {0: .2f} $\pm$ {1: .2f}'.format(results.posteriors['lnZ'],\
+    lnZstr = r'Log - evidence: {0: .2f} $\pm$ {1: .2f}'.format(results.posteriors['lnZ'],
                                                            results.posteriors['lnZerr'])
     print(lnZstr)
     with open(out_folder + "/lnZ={:.2f}.txt".format(results.posteriors['lnZ']), "w") as text_file:
@@ -306,7 +310,7 @@ def showResults(datafolder, out_folder, **fitKwargs):
     # plot RV-BS
     fig, ax = plots.plot_RV_BS(datafolder+'TIC237913194_activity.dat', out_folder, results)
 
-    lnZstr = r'Log - evidence: {0: .2f} $\pm$ {1: .2f}'.format(results.posteriors['lnZ'],\
+    lnZstr = r'Log - evidence: {0: .2f} $\pm$ {1: .2f}'.format(results.posteriors['lnZ'],
                                                            results.posteriors['lnZerr'])
     print(lnZstr)
     return results
@@ -320,7 +324,7 @@ def printTables(out_folder):
     except FileNotFoundError:
         results = dataset.fit(use_dynesty=False, dynamic=True,
                           **fitKwargs) # has to be ~same call as during fit
-    # latextable.print_prior_table(dataset)
+    latextable.print_prior_table(dataset)
     latextable.print_posterior_table(dataset, results, precision=2)
 
 
