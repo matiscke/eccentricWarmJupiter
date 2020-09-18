@@ -23,7 +23,9 @@ datafolder = 'data/'
 # out_folder = 'out/46_tess+chat+lcogt&GP+feros+GP'
 ####------------------------------------------------
 # from here on, fits are with supersampling of long cadence TESS data
-out_folder = 'out/47_tess+chat+lcogt+feros+GP'  # same as 41, but with supersampling
+# out_folder = 'out/47_tess+chat+lcogt+feros+GP'  # same as 41, but with supersampling
+# out_folder = 'out/48_tess+chat+lcogt+feros+GP_flatRho'  # same as 47, but with flat prior on rho_star
+out_folder = 'out/49_tess+chat+lcogt+feros+GP_linearTrend'  # same as 47, but with linear RV trend
 
 
 # constrain Rp/Rs
@@ -93,6 +95,7 @@ def get_priors(GP=True):
 
     # Star
     'rho' : ['normal', [1120,110]],
+    # 'rho' : ['loguniform', [100, 1e4]], # uninformative prior to benchmark stellar analysis
 
     # TESS
     'q1_TESSERACT+TESS' : ['uniform', [0., 1.]],
@@ -137,8 +140,8 @@ def get_priors(GP=True):
     # 'sigma_w_CORALIE' : ['loguniform', [0.01, 1e3]],
 
     # long-term trend
-    # 'rv_intercept' : ['normal', [0.0,10000]],
-    # 'rv_slope' : ['normal', [0.0,1.0]],
+    'rv_intercept' : ['normal', [0.0,10000]],
+    'rv_slope' : ['normal', [0.0,1.0]],
     # 'rv_quad' : ['normal', [0.0,1.0]]
     }
 
