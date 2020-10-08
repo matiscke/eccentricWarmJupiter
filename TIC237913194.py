@@ -11,27 +11,11 @@ except ModuleNotFoundError:
     print('module "popsyntools" not found. Skipping plot styles therein.')
 
 datafolder = 'data/'
-
-# out_folder = 'out/39_tess+chat+feros+GP'
-# out_folder = 'out/40_tess+chat+feros+GP+linearTrend'
-# out_folder = 'out/41_tess+chat+lcogt+feros+GP'
-# out_folder = 'out/42_tess+chat+lcogt+feros+GP' # same but number
-# out_folder = 'out/43b_tess+chat+lcogt&GP+feros+GP' # same but with GP for LCOGT
-# out_folder = 'out/44_lcogt&GP' # LCOGT phot + matern kernel GP
-# out_folder = 'out/44f_lcogt&GP' # different priors for matern kernel
-# out_folder = 'out/45_lcogt' # LCOGT phot only
-# out_folder = 'out/46_tess+chat+lcogt&GP+feros+GP'
-####------------------------------------------------
-# from here on, fits are with supersampling of long cadence TESS data
-# out_folder = 'out/47_tess+chat+lcogt+feros+GP'  # same as 41, but with supersampling
-# out_folder = 'out/48_tess+chat+lcogt+feros+GP_flatRho'  # same as 47, but with flat prior on rho_star
-out_folder = 'out/49_tess+chat+lcogt+feros+GP_linearTrend'  # same as 47, but with linear RV trend
-
+out_folder = 'out/01_tess+chat+lcogt+feros+GP'  # same as 47, but with linear RV trend
 
 # constrain Rp/Rs
 pl=0.0
 pu=0.5
-
 
 if 'GP' in out_folder and not 'noGP' in out_folder:
     GP = True # include Gaussian Process regressor for TESS data
@@ -140,8 +124,8 @@ def get_priors(GP=True):
     # 'sigma_w_CORALIE' : ['loguniform', [0.01, 1e3]],
 
     # long-term trend
-    'rv_intercept' : ['normal', [0.0,10000]],
-    'rv_slope' : ['normal', [0.0,1.0]],
+    # 'rv_intercept' : ['normal', [0.0,10000]],
+    # 'rv_slope' : ['normal', [0.0,1.0]],
     # 'rv_quad' : ['normal', [0.0,1.0]]
     }
 
