@@ -1,0 +1,7 @@
+*
+!.gitignore
+!/data
+!/data/*
+!*.py
+!*.ipynb
+!*.md
